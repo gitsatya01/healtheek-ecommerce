@@ -21,16 +21,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Helper function to set cookie
-const setCookie = (name: string, value: string, days: number = 7) => {
-  const expires = new Date()
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`
+// Helper function to set cookie via API route
+const setCookieViaAPI = async (userData: User) => {
+  try {
+    await fetch('/api/auth/set-cookie', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    })
+  } catch (error) {
+    console.error('Failed to set cookie:', error)
+  }
 }
 
-// Helper function to delete cookie
-const deleteCookie = (name: string) => {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`
+// Helper function to clear cookie via API route
+const clearCookieViaAPI = async () => {
+  try {
+    await fetch('/api/auth/clear-cookie', {
+      method: 'POST',
+    })
+  } catch (error) {
+    console.error('Failed to clear cookie:', error)
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -42,12 +56,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for stored user data
     const checkAuth = () => {
       try {
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-          const userData = JSON.parse(storedUser)
-          setUser(userData)
-          // Sync with cookie for middleware
-          setCookie("user", storedUser)
+        if (typeof window !== 'undefined') {
+          const storedUser = localStorage.getItem("user")
+          if (storedUser) {
+            const userData = JSON.parse(storedUser)
+            setUser(userData)
+            // Sync with cookie for middleware
+            setCookieViaAPI(userData)
+          }
         }
       } catch (error) {
         console.error("Error reading auth state:", error)
@@ -84,8 +100,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       const userJson = JSON.stringify(user)
       setUser(user)
-      localStorage.setItem("user", userJson)
-      setCookie("user", userJson)
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("user", userJson)
+      }
+      
+      // Set cookie via API route
+      await setCookieViaAPI(user)
       
       toast.success("Successfully signed in!")
       
@@ -116,8 +137,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       const userJson = JSON.stringify(user)
       setUser(user)
-      localStorage.setItem("user", userJson)
-      setCookie("user", userJson)
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem("user", userJson)
+      }
+      
+      // Set cookie via API route
+      await setCookieViaAPI(user)
+      
       toast.success("Successfully signed up!")
       router.push("/")
     } catch (error) {
@@ -133,8 +160,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       // Here you would typically make an API call to your backend
       setUser(null)
-      localStorage.removeItem("user")
-      deleteCookie("user")
+      
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("user")
+      }
+      
+      // Clear cookie via API route
+      await clearCookieViaAPI()
+      
       toast.success("Successfully signed out!")
       router.push("/")
     } catch (error) {
