@@ -52,22 +52,19 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     notFound()
   }
 
-  const filteredProducts = products.filter((product) => product.category === category.id)
+  const filteredProducts = products.filter(
+    (product) => product.category === category.id
+  )
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">{category.name}</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <ProductFilters />
+        <div className="md:col-span-1">
+          <ProductFilters />
+        </div>
         <div className="md:col-span-3">
-          <ProductGrid 
-            products={filteredProducts} 
-            searchParams={{
-              category: params.category,
-              sort: searchParams.sort,
-              search: searchParams.search,
-            }}
-          />
+          <ProductGrid products={filteredProducts} searchParams={searchParams} />
         </div>
       </div>
     </div>
