@@ -13,10 +13,10 @@ type Props = {
   params: Promise<{
     category: string
   }>
-  searchParams: {
+  searchParams: Promise<{
     sort?: string
     search?: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,7 +43,10 @@ export async function generateStaticParams() {
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
-  const resolvedParams = await params
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ])
   const [products, categories, category] = await Promise.all([
     getProducts(),
     getCategories(),
@@ -66,7 +69,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           <ProductFilters />
         </div>
         <div className="md:col-span-3">
-          <ProductGrid products={filteredProducts} searchParams={searchParams} />
+          <ProductGrid products={filteredProducts} searchParams={resolvedSearchParams} />
         </div>
       </div>
     </div>
