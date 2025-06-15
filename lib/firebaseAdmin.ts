@@ -1,10 +1,9 @@
 // lib/firebaseAdmin.ts
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
+import admin from 'firebase-admin';
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
@@ -13,5 +12,5 @@ if (!getApps().length) {
 }
 
 export async function verifyIdToken(token: string) {
-  return getAuth().verifyIdToken(token);
+  return admin.auth().verifyIdToken(token);
 }
