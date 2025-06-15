@@ -7,14 +7,33 @@ import { BusinessTools } from "@/components/sections/business-tools"
 import { Footer } from "@/components/layout/footer"
 import { getProducts } from "@/lib/data"
 
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function HomePage() {
   const products = await getProducts()
 
-  // Filter products by category
-  const smartFormulas = products.filter((p) => p.category === "smart-formula-2025")
-  const primeFormulas = products.filter((p) => p.category === "prime-formula")
-  const popularProducts = products.filter((p) => p.featured === true)
-  const businessTools = products.filter((p) => p.category === "business-tools")
+  // Filter products by category - handle both category names and IDs
+  const smartFormulas = products.filter((p) => 
+    p.category === "smart-formula-2025" || 
+    p.category === "Smart Formula's" ||
+    p.category === "Smart Formulas"
+  )
+  const primeFormulas = products.filter((p) => 
+    p.category === "prime-formula" || 
+    p.category === "Prime Formula's" ||
+    p.category === "Prime Formulas"
+  )
+  const popularProducts = products.filter((p) => 
+    p.featured === true || 
+    p.category === "popular-products" ||
+    p.category === "Popular Products"
+  )
+  const businessTools = products.filter((p) => 
+    p.category === "business-tools" || 
+    p.category === "Business Tools"
+  )
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: "Browse our complete collection of health and wellness supplements across all categories.",
 }
 
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface SearchParams {
   category?: string
   sort?: string
