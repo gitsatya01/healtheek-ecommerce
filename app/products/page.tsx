@@ -4,77 +4,82 @@ import { CategorySidebar } from "@/components/products/category-sidebar"
 import { ProductSearch } from "@/components/products/product-search"
 import { ProductGridSSR } from "@/components/products/product-grid-ssr"
 import { getProducts, getCategories } from "@/lib/data"
-import { Metadata } from "next"
-import { ProductGrid } from "@/components/products/product-grid"
-import { ProductFilters } from "@/components/products/product-filters"
-
-type Props = {
-  searchParams: Promise<{
-    category?: string
-    sort?: string
-    search?: string
-    page?: string
-  }>
-}
+import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Products | HealthEek",
-  description: "Browse our collection of health and wellness products",
+  title: "Buy Products - HealthEek",
+  description: "Browse our complete collection of health and wellness supplements across all categories.",
 }
 
-export default async function ProductsPage({ searchParams }: Props) {
-  const resolvedSearchParams = await searchParams
-  const [products, categories] = await Promise.all([
-    getProducts(),
-    getCategories(),
-  ])
+interface SearchParams {
+  category?: string
+  sort?: string
+  search?: string
+  page?: string
+}
+
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  // Server-side data fetching
+  const [products, categories] = await Promise.all([getProducts(), getCategories()])
 
   // Server-side filtering and sorting
-  const selectedCategory = resolvedSearchParams.category || "all"
-  const sortBy = resolvedSearchParams.sort || "default"
-  const searchQuery = resolvedSearchParams.search || ""
-  const currentPage = Number(resolvedSearchParams.page) || 1
+  const selectedCategory = searchParams.category || "all"
+  const sortBy = searchParams.sort || "default"
+  const searchQuery = searchParams.search || ""
+  const currentPage = Number(searchParams.page) || 1
 
   let filteredProducts = products
 
-  // Filter by category
+  // Filter by category on server
   if (selectedCategory !== "all") {
-    const category = categories.find((c) => c.id === selectedCategory)
-    if (category) {
-      filteredProducts = filteredProducts.filter(
-        (product) => product.category === category.id
-      )
+    if (selectedCategory === "popular-products") {
+      filteredProducts = filteredProducts.filter((p) => p.featured === true)
+    } else {
+      filteredProducts = filteredProducts.filter((p) => p.category === selectedCategory)
     }
   }
 
-  // Filter by search query
-  if (searchQuery) {
+  // Filter by search query on server
+  if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase()
     filteredProducts = filteredProducts.filter(
-      (product) =>
-        product.name.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query)
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.subtitle.toLowerCase().includes(query),
     )
   }
 
-  // Sort products
-  switch (sortBy) {
-    case "price-asc":
-      filteredProducts.sort((a, b) => a.primePrice - b.primePrice)
-      break
-    case "price-desc":
-      filteredProducts.sort((a, b) => b.primePrice - a.primePrice)
-      break
-    case "name-asc":
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name))
-      break
-    case "name-desc":
-      filteredProducts.sort((a, b) => b.name.localeCompare(a.name))
-      break
-    default:
-      // Default sorting (e.g., by popularity or newest)
-      break
-  }
+  // Sort products on server
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case "price-low":
+        return a.primePrice - b.primePrice
+      case "price-high":
+        return b.primePrice - a.primePrice
+      case "name-asc":
+        return a.name.localeCompare(b.name)
+      case "name-desc":
+        return b.name.localeCompare(a.name)
+      case "rating":
+        return (b.rating || 0) - (a.rating || 0)
+      case "newest":
+        return b.isNew ? 1 : -1
+      case "default":
+      default:
+        return b.featured ? 1 : -1
+    }
+  })
+
+  // Pagination on server
+  const itemsPerPage = 12
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -88,14 +93,24 @@ export default async function ProductsPage({ searchParams }: Props) {
       </div>
 
       <main className="container mx-auto px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1">
-            <ProductFilters />
-          </div>
-          <div className="md:col-span-3">
-            <ProductGrid
-              products={filteredProducts}
-              searchParams={resolvedSearchParams}
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-8">
+          {/* Category Sidebar - Mobile Collapsible */}
+          <aside className="lg:col-span-1 order-2 lg:order-1">
+            <CategorySidebar categories={categories} selectedCategory={selectedCategory} />
+          </aside>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3 space-y-4 md:space-y-6 order-1 lg:order-2">
+            {/* Search and Sort */}
+            <ProductSearch searchQuery={searchQuery} sortBy={sortBy} />
+
+            {/* Product Grid */}
+            <ProductGridSSR
+              products={paginatedProducts}
+              totalProducts={sortedProducts.length}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              searchParams={searchParams}
             />
           </div>
         </div>
