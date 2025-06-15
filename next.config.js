@@ -1,40 +1,42 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['images.unsplash.com'], // Add any other image domains you're using
+    domains: ['images.unsplash.com', 'firebasestorage.googleapis.com'],
   },
-  // Enable static optimization where possible
-  swcMinify: true,
-  // Enable React strict mode for better development
   reactStrictMode: true,
-  // Configure page extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  // Configure headers for security
-  async headers() {
+  experimental: {
+    serverActions: true,
+  },
+  headers: async () => {
     return [
       {
         source: '/:path*',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
           },
           {
             key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            value: '1; mode=block'
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
           },
-        ],
-      },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          }
+        ]
+      }
     ]
-  },
+  }
 }
 
 module.exports = nextConfig 

@@ -1,13 +1,12 @@
-import { Header } from "@/components/layout/header"
-import { Footer } from "@/components/layout/footer"
-import { ProductDetails } from "@/components/products/product-details"
-import { RelatedProducts } from "@/components/products/related-products"
-import { getProduct, getProducts } from "@/lib/data"
+import { Metadata } from "next"
 import { notFound } from "next/navigation"
-import type { Metadata } from "next"
+import { getProduct, getProducts } from "@/lib/data"
+import { ProductDetails } from "@/components/products/product-details"
 
 interface Props {
-  params: { slug: string }
+  params: {
+    slug: string
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,13 +19,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${product.name} - HealthEek`,
+    title: product.name,
     description: product.description,
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: [product.image],
-    },
   }
 }
 
@@ -44,17 +38,5 @@ export default async function ProductPage({ params }: Props) {
     notFound()
   }
 
-  const relatedProducts = await getProducts()
-  const related = relatedProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main>
-        <ProductDetails product={product} />
-        <RelatedProducts products={related} />
-      </main>
-      <Footer />
-    </div>
-  )
+  return <ProductDetails product={product} />
 }

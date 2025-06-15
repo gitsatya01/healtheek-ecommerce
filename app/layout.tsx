@@ -5,8 +5,14 @@ import "./globals.css"
 import { CartProvider } from "@/components/cart/cart-context"
 import { AuthProvider } from "@/lib/auth-context"
 import { Toaster } from "@/components/ui/toaster"
+import { initAnalytics } from '@/lib/analytics'
 
 const inter = Inter({ subsets: ["latin"] })
+
+// Initialize analytics
+if (typeof window !== 'undefined') {
+  initAnalytics();
+}
 
 export const metadata: Metadata = {
   title: "HealthEek - Premium Health & Wellness Supplements",

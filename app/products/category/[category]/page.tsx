@@ -6,13 +6,16 @@ import { ProductGridSSR } from "@/components/products/product-grid-ssr"
 import { getProducts, getCategories, getCategory } from "@/lib/data"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { ProductGrid } from "@/components/products/product-grid"
+import { ProductFilters } from "@/components/products/product-filters"
 
 interface Props {
-  params: { category: string }
+  params: {
+    category: string
+  }
   searchParams: {
     sort?: string
     search?: string
-    page?: string
   }
 }
 
@@ -21,13 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!category) {
     return {
-      title: "Category Not Found - HealthEek",
+      title: "Category Not Found",
     }
   }
 
   return {
-    title: `${category.name} - HealthEek`,
-    description: `Browse our ${category.name.toLowerCase()} products for optimal health and wellness.`,
+    title: category.name,
+    description: `Browse our collection of ${category.name}`,
   }
 }
 
@@ -49,102 +52,24 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     notFound()
   }
 
-  // Server-side filtering and sorting
-  const sortBy = searchParams.sort || "default"
-  const searchQuery = searchParams.search || ""
-  const currentPage = Number(searchParams.page) || 1
-
-  let filteredProducts = products
-
-  // Filter by category - handle popular products specially
-  if (params.category === "popular-products") {
-    filteredProducts = products.filter((p) => p.featured === true)
-  } else {
-    filteredProducts = products.filter((p) => p.category === params.category)
-  }
-
-  // Filter by search query on server
-  if (searchQuery.trim()) {
-    const query = searchQuery.toLowerCase()
-    filteredProducts = filteredProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.subtitle.toLowerCase().includes(query),
-    )
-  }
-
-  // Sort products on server
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.primePrice - b.primePrice
-      case "price-high":
-        return b.primePrice - a.primePrice
-      case "name-asc":
-        return a.name.localeCompare(b.name)
-      case "name-desc":
-        return b.name.localeCompare(a.name)
-      case "rating":
-        return (b.rating || 0) - (a.rating || 0)
-      case "newest":
-        return b.isNew ? 1 : -1
-      case "default":
-      default:
-        return b.featured ? 1 : -1
-    }
-  })
-
-  // Pagination on server
-  const itemsPerPage = 12
-  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + itemsPerPage)
+  const filteredProducts = products.filter((product) => product.category === category.id)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      {/* Page Header */}
-      <div className="bg-teal-600 text-white py-4">
-        <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-bold">{category.name}</h1>
-          <p className="text-teal-100 mt-1">
-            {category.description || `Browse our ${category.name.toLowerCase()} products`}
-          </p>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">{category.name}</h1>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <ProductFilters />
+        <div className="md:col-span-3">
+          <ProductGrid 
+            products={filteredProducts} 
+            searchParams={{
+              category: params.category,
+              sort: searchParams.sort,
+              search: searchParams.search,
+            }}
+          />
         </div>
       </div>
-
-      <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Category Sidebar */}
-          <aside className="lg:col-span-1">
-            <CategorySidebar categories={categories} selectedCategory={params.category} />
-          </aside>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Search and Sort */}
-            <ProductSearch searchQuery={searchQuery} sortBy={sortBy} />
-
-            {/* Product Grid */}
-            <ProductGridSSR
-              products={paginatedProducts}
-              totalProducts={sortedProducts.length}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              searchParams={{
-                category: params.category,
-                sort: searchParams.sort,
-                search: searchParams.search,
-                page: searchParams.page,
-              }}
-            />
-          </div>
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }
