@@ -1,181 +1,94 @@
-// app/admin/dashboard/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
-import { db, auth } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Package, 
   Tag, 
   LogOut, 
   Plus, 
-  Edit2, 
-  Trash2,
-  ChevronDown,
-  ChevronUp
+  Users,
+  ShoppingCart,
+  TrendingUp
 } from "lucide-react";
-import type { Product } from "@/lib/types";
 
 export default function AdminDashboard() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
-  const [loadingProducts, setLoadingProducts] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [activeSection, setActiveSection] = useState<'products' | 'categories'>('products');
-  const [showAddForm, setShowAddForm] = useState(false);
-  
-  // Product form
-  const [prodForm, setProdForm] = useState({ 
-    name: "", 
-    subtitle: "", 
-    slug: "", 
-    description: "", 
-    mrpPrice: "", 
-    primePrice: "", 
-    image: "", 
-    category: "", 
-    isNew: false 
+  const { user, signOut, loading } = useAuth();
+  const router = useRouter();
+  const [stats, setStats] = useState({
+    totalProducts: 12,
+    totalOrders: 45,
+    totalUsers: 128,
+    revenue: 15420
   });
-  const [editProdId, setEditProdId] = useState<string | null>(null);
-  
-  // Category form
-  const [catForm, setCatForm] = useState({ name: "", description: "" });
-  const [editCatId, setEditCatId] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) window.location.href = "/admin/login";
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    setLoadingProducts(true);
-    const unsub = onSnapshot(collection(db, "products"), (querySnapshot: QuerySnapshot<DocumentData>) => {
-      setProducts(querySnapshot.docs.map((doc: DocumentData) => ({ id: doc.id, ...doc.data() } as Product)));
-      setLoadingProducts(false);
-    });
-    return () => unsub();
-  }, []);
-  useEffect(() => {
-    setLoadingCategories(true);
-    const unsub = onSnapshot(collection(db, "categories"), (querySnapshot: QuerySnapshot<DocumentData>) => {
-      setCategories(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setLoadingCategories(false);
-    });
-    return () => unsub();
-  }, []);
-
-  // Product handlers
-    const handleProdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      setProdForm({ ...prodForm, [name]: (e.target as HTMLInputElement).checked });
-    } else {
-      setProdForm({ ...prodForm, [name]: value });
+    if (!loading && (!user || user.role !== "admin")) {
+      router.push("/admin/login");
     }
-  };
-  const handleProdSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const productData = {
-      ...prodForm,
-      mrpPrice: Number(prodForm.mrpPrice),
-      primePrice: Number(prodForm.primePrice),
-      isNew: Boolean(prodForm.isNew),
-    };
-
-    if (editProdId) {
-      await updateDoc(doc(db, "products", editProdId), productData);
-    } else {
-      await addDoc(collection(db, "products"), productData);
-    }
-    setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
-    setEditProdId(null);
-  };
-    const handleProdEdit = (product: Product) => {
-    setProdForm({
-      name: product.name || "",
-      subtitle: product.subtitle || "",
-      slug: product.slug || "",
-      description: product.description || "",
-      mrpPrice: product.mrpPrice?.toString() || "",
-      primePrice: product.primePrice?.toString() || "",
-      image: product.image || "",
-      category: product.category || "",
-      isNew: product.isNew || false,
-    });
-    setEditProdId(product.id!);
-  };
-  const handleProdDelete = async (id: string) => {
-    await deleteDoc(doc(db, "products", id));
-  };
-  // Category handlers
-  const handleCatChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setCatForm({ ...catForm, [e.target.name]: e.target.value });
-  };
-  const handleCatSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editCatId) {
-      await updateDoc(doc(db, "categories", editCatId), {
-        name: catForm.name,
-        description: catForm.description,
-      });
-    } else {
-      await addDoc(collection(db, "categories"), {
-        name: catForm.name,
-        description: catForm.description,
-      });
-    }
-    setCatForm({ name: "", description: "" });
-    setEditCatId(null);
-  };
-  const handleCatEdit = (cat: any) => {
-    setCatForm({
-      name: cat.name || "",
-      description: cat.description || ""
-    });
-    setEditCatId(cat.id);
-  };
-  const handleCatDelete = async (id: string) => {
-    await deleteDoc(doc(db, "categories", id));
-  };
+  }, [user, loading, router]);
 
   const handleLogout = async () => {
-    await signOut(auth);
-    window.location.href = "/admin/login";
+    await signOut();
+    router.push("/admin/login");
   };
 
-  if (!user) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">Healtheek</h1>
+          <h1 className="text-2xl font-bold text-gray-800">HealthEek</h1>
           <p className="text-sm text-gray-600">Admin Panel</p>
         </div>
         <nav className="mt-6">
+          <div className="flex items-center px-6 py-3 bg-teal-50 text-teal-600">
+            <LayoutDashboard className="w-5 h-5 mr-3" />
+            Dashboard
+          </div>
           <button
-            onClick={() => setActiveSection('products')}
-            className={`flex items-center w-full px-6 py-3 text-left ${
-              activeSection === 'products' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => router.push("/admin/products")}
+            className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50"
           >
             <Package className="w-5 h-5 mr-3" />
             Products
           </button>
           <button
-            onClick={() => setActiveSection('categories')}
-            className={`flex items-center w-full px-6 py-3 text-left ${
-              activeSection === 'categories' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'
-            }`}
+            onClick={() => router.push("/admin/categories")}
+            className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50"
           >
             <Tag className="w-5 h-5 mr-3" />
             Categories
+          </button>
+          <button
+            onClick={() => router.push("/admin/orders")}
+            className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50"
+          >
+            <ShoppingCart className="w-5 h-5 mr-3" />
+            Orders
+          </button>
+          <button
+            onClick={() => router.push("/admin/users")}
+            className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50"
+          >
+            <Users className="w-5 h-5 mr-3" />
+            Users
           </button>
         </nav>
         <div className="absolute bottom-0 w-full p-6">
@@ -192,278 +105,112 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="ml-64 p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">
-              {activeSection === 'products' ? 'Products Management' : 'Categories Management'}
-            </h2>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add {activeSection === 'products' ? 'Product' : 'Category'}
-            </button>
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+            <p className="text-gray-600">Welcome back, {user.name}!</p>
           </div>
 
-          {/* Add/Edit Form */}
-          {showAddForm && (
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                {editProdId || editCatId ? 'Edit' : 'Add'} {activeSection === 'products' ? 'Product' : 'Category'}
-              </h3>
-              {activeSection === 'products' ? (
-                <form onSubmit={handleProdSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-                      <input
-                        name="name"
-                        value={prodForm.name}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
-                      <input
-                        name="subtitle"
-                        value={prodForm.subtitle}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                      <input
-                        name="slug"
-                        value={prodForm.slug}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                      <select
-                        name="category"
-                        value={prodForm.category}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.name}>{cat.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
-                      name="description"
-                      value={prodForm.description}
-                      onChange={handleProdChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      rows={4}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">MRP Price</label>
-                      <input
-                        name="mrpPrice"
-                        type="number"
-                        value={prodForm.mrpPrice}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Prime Price</label>
-                      <input
-                        name="primePrice"
-                        type="number"
-                        value={prodForm.primePrice}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input
-                      name="image"
-                      value={prodForm.image}
-                      onChange={handleProdChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="isNew"
-                      name="isNew"
-                      checked={prodForm.isNew}
-                      onChange={handleProdChange}
-                      className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                    />
-                    <label htmlFor="isNew" className="text-sm text-gray-700">Mark as New Product</label>
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
-                    >
-                      {editProdId ? 'Update' : 'Add'} Product
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddForm(false);
-                        setEditProdId(null);
-                        setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
-                      }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleCatSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
-                    <input
-                      name="name"
-                      value={catForm.name}
-                      onChange={handleCatChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
-                      name="description"
-                      value={catForm.description}
-                      onChange={handleCatChange}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      rows={4}
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
-                    >
-                      {editCatId ? 'Update' : 'Add'} Category
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAddForm(false);
-                        setEditCatId(null);
-                        setCatForm({ name: "", description: "" });
-                      }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Package className="w-6 h-6 text-blue-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Products</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
+                </div>
+              </div>
             </div>
-          )}
 
-          {/* List Section */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {activeSection === 'products' ? (
-              loadingProducts ? (
-                <div className="p-8 text-center text-gray-500">Loading products...</div>
-              ) : (
-                <div className="divide-y divide-gray-200">
-                  {products.map(product => (
-                    <div key={product.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{product.name}</h4>
-                          <p className="text-sm text-gray-500">{product.subtitle}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-teal-600 font-semibold">₹{product.primePrice}</span>
-                            <span className="text-gray-400 line-through">₹{product.mrpPrice}</span>
-                            {product.isNew && (
-                              <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 rounded-full">New</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            handleProdEdit(product);
-                            setShowAddForm(true);
-                          }}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleProdDelete(product.id!)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <ShoppingCart className="w-6 h-6 text-green-600" />
                 </div>
-              )
-            ) : (
-              loadingCategories ? (
-                <div className="p-8 text-center text-gray-500">Loading categories...</div>
-              ) : (
-                <div className="divide-y divide-gray-200">
-                  {categories.map(cat => (
-                    <div key={cat.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{cat.name}</h4>
-                        <p className="text-sm text-gray-500">{cat.description}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            handleCatEdit(cat);
-                            setShowAddForm(true);
-                          }}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleCatDelete(cat.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
                 </div>
-              )
-            )}
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <Users className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <TrendingUp className="w-6 h-6 text-yellow-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">₹{stats.revenue.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button
+                onClick={() => router.push("/admin/add-item")}
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Plus className="w-5 h-5 text-teal-600 mr-3" />
+                <span className="font-medium">Add New Product</span>
+              </button>
+              
+              <button
+                onClick={() => router.push("/admin/categories")}
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Tag className="w-5 h-5 text-teal-600 mr-3" />
+                <span className="font-medium">Manage Categories</span>
+              </button>
+              
+              <button
+                onClick={() => router.push("/admin/orders")}
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <ShoppingCart className="w-5 h-5 text-teal-600 mr-3" />
+                <span className="font-medium">View Orders</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+            <div className="space-y-3">
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-sm text-gray-600">New order #1234 received</span>
+                <span className="ml-auto text-xs text-gray-400">2 hours ago</span>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                <span className="text-sm text-gray-600">Product "Vitamin D3" updated</span>
+                <span className="ml-auto text-xs text-gray-400">4 hours ago</span>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
+                <span className="text-sm text-gray-600">New user registered</span>
+                <span className="ml-auto text-xs text-gray-400">6 hours ago</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
