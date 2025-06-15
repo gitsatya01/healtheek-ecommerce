@@ -21,6 +21,18 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Helper function to set cookie
+const setCookie = (name: string, value: string, days: number = 7) => {
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`
+}
+
+// Helper function to delete cookie
+const deleteCookie = (name: string) => {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -32,7 +44,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedUser = localStorage.getItem("user")
         if (storedUser) {
-          setUser(JSON.parse(storedUser))
+          const userData = JSON.parse(storedUser)
+          setUser(userData)
+          // Sync with cookie for middleware
+          setCookie("user", storedUser)
         }
       } catch (error) {
         console.error("Error reading auth state:", error)
@@ -47,18 +62,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
-      // Here you would typically make an API call to your backend
-      // For now, we'll simulate a successful login
-      const user: User = {
-        id: "1",
-        email,
-        name: "Test User",
-        role: "customer",
+      
+      // Check for admin credentials
+      let user: User
+      if (email === "admin@healtheek.com" && password === "admin123") {
+        user = {
+          id: "admin",
+          email,
+          name: "Admin User",
+          role: "admin",
+        }
+      } else {
+        // Regular user login
+        user = {
+          id: "1",
+          email,
+          name: "Test User",
+          role: "customer",
+        }
       }
+      
+      const userJson = JSON.stringify(user)
       setUser(user)
-      localStorage.setItem("user", JSON.stringify(user))
+      localStorage.setItem("user", userJson)
+      setCookie("user", userJson)
+      
       toast.success("Successfully signed in!")
-      router.push("/")
+      
+      // Redirect based on role
+      if (user.role === "admin") {
+        router.push("/admin")
+      } else {
+        router.push("/")
+      }
     } catch (error) {
       toast.error("Failed to sign in. Please check your credentials.")
       throw error
@@ -78,8 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name,
         role: "customer",
       }
+      const userJson = JSON.stringify(user)
       setUser(user)
-      localStorage.setItem("user", JSON.stringify(user))
+      localStorage.setItem("user", userJson)
+      setCookie("user", userJson)
       toast.success("Successfully signed up!")
       router.push("/")
     } catch (error) {
@@ -96,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Here you would typically make an API call to your backend
       setUser(null)
       localStorage.removeItem("user")
+      deleteCookie("user")
       toast.success("Successfully signed out!")
       router.push("/")
     } catch (error) {
