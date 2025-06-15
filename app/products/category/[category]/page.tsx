@@ -9,10 +9,10 @@ import { notFound } from "next/navigation"
 import { ProductGrid } from "@/components/products/product-grid"
 import { ProductFilters } from "@/components/products/product-filters"
 
-interface Props {
-  params: {
+type Props = {
+  params: Promise<{
     category: string
-  }
+  }>
   searchParams: {
     sort?: string
     search?: string
@@ -20,7 +20,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const category = await getCategory(params.category)
+  const resolvedParams = await params
+  const category = await getCategory(resolvedParams.category)
 
   if (!category) {
     return {
@@ -42,10 +43,11 @@ export async function generateStaticParams() {
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
+  const resolvedParams = await params
   const [products, categories, category] = await Promise.all([
     getProducts(),
     getCategories(),
-    getCategory(params.category),
+    getCategory(resolvedParams.category),
   ])
 
   if (!category) {

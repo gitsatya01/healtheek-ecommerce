@@ -3,14 +3,15 @@ import { notFound } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/data"
 import { ProductDetails } from "@/components/products/product-details"
 
-interface Props {
-  params: {
+type Props = {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProduct(params.slug)
+  const resolvedParams = await params
+  const product = await getProduct(resolvedParams.slug)
 
   if (!product) {
     return {
@@ -32,7 +33,8 @@ export async function generateStaticParams() {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const product = await getProduct(params.slug)
+  const resolvedParams = await params
+  const product = await getProduct(resolvedParams.slug)
 
   if (!product) {
     notFound()
