@@ -6,12 +6,17 @@ import { getProduct, getProducts } from "@/lib/data"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProduct(params.slug)
+  const { slug } = await params
+  const product = await getProduct(slug)
 
   if (!product) {
     return {
@@ -30,15 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export async function generateStaticParams() {
-  const products = await getProducts()
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
 export default async function ProductPage({ params }: Props) {
-  const product = await getProduct(params.slug)
+  const { slug } = await params
+  const product = await getProduct(slug)
 
   if (!product) {
     notFound()

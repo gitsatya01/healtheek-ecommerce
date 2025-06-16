@@ -42,42 +42,42 @@ export function ProductGridSSR({
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-6">
       {/* Results Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm text-gray-600 gap-2">
-        <p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-sm text-gray-600 gap-2 bg-white p-4 rounded-lg shadow-sm">
+        <p className="font-medium">
           Showing {startItem}-{endItem} of {totalProducts} products
         </p>
-        <p className="text-xs sm:text-sm">
+        <p className="text-xs sm:text-sm text-gray-500">
           Page {currentPage} of {totalPages}
         </p>
       </div>
 
       {/* Product Grid */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12 md:py-16">
+        <div className="text-center py-16 md:py-20 bg-white rounded-lg shadow-sm">
           <div className="text-gray-400 mb-4">
-            <Search className="w-12 h-12 md:w-16 md:h-16 mx-auto" />
+            <Search className="w-16 h-16 md:w-20 md:h-20 mx-auto" />
           </div>
-          <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-          <p className="text-gray-600 text-sm md:text-base">Try adjusting your search or filter criteria</p>
+          <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-3">No products found</h3>
+          <p className="text-gray-600 text-base md:text-lg">Try adjusting your search or filter criteria</p>
         </div>
       )}
 
       {/* Mobile-Optimized Pagination */}
       {totalPages > 1 && (
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-4 bg-white p-4 rounded-lg shadow-sm">
           {/* Mobile Pagination - Simplified */}
           <div className="flex items-center justify-between md:hidden">
             {currentPage > 1 ? (
               <Link href={createPageUrl(currentPage - 1)}>
-                <Button variant="outline" size="sm" className="flex items-center">
+                <Button variant="outline" size="sm" className="flex items-center px-4 py-2">
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Previous
                 </Button>
@@ -86,13 +86,13 @@ export function ProductGridSSR({
               <div></div>
             )}
 
-            <span className="text-sm text-gray-600 px-4">
+            <span className="text-sm font-medium text-gray-700 px-4">
               {currentPage} of {totalPages}
             </span>
 
             {currentPage < totalPages ? (
               <Link href={createPageUrl(currentPage + 1)}>
-                <Button variant="outline" size="sm" className="flex items-center">
+                <Button variant="outline" size="sm" className="flex items-center px-4 py-2">
                   Next
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>

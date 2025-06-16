@@ -46,7 +46,19 @@ export default async function ProductsPage({
     if (selectedCategory === "popular-products") {
       filteredProducts = filteredProducts.filter((p) => p.featured === true)
     } else {
-      filteredProducts = filteredProducts.filter((p) => p.category === selectedCategory)
+      // Find the category name for the selected category ID
+      const selectedCategoryData = categories.find(cat => cat.id === selectedCategory)
+      const categoryName = selectedCategoryData?.name
+      
+      // Filter by both category ID and category name to handle Firebase data
+      filteredProducts = filteredProducts.filter((p) => 
+        p.category === selectedCategory || 
+        p.category === categoryName ||
+        (categoryName === "Smart Formulas" && (p.category === "Smart Formula's" || p.category === "smart-formula-2025")) ||
+        (categoryName === "Prime Formulas" && (p.category === "Prime Formula's" || p.category === "prime-formula")) ||
+        (categoryName === "Popular Products" && p.featured === true) ||
+        (categoryName === "business-tools" && p.category === "business-tools")
+      )
     }
   }
 
@@ -93,21 +105,24 @@ export default async function ProductsPage({
       <Header />
 
       {/* Page Header */}
-      <div className="bg-teal-600 text-white py-3 md:py-4">
+      <div className="bg-teal-600 text-white py-6 md:py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-xl md:text-2xl font-bold">Buy Products</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Buy Products</h1>
+          <p className="text-teal-100 mt-2 text-sm md:text-base">
+            Discover our complete collection of health and wellness supplements
+          </p>
         </div>
       </div>
 
-      <main className="container mx-auto px-4 py-4 md:py-8">
-        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 md:gap-8">
-          {/* Category Sidebar - Mobile Collapsible */}
-          <aside className="lg:col-span-1 order-2 lg:order-1">
+      <main className="container mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 md:gap-8">
+          {/* Category Sidebar - Mobile First, Desktop Left */}
+          <aside className="lg:col-span-1 order-1">
             <CategorySidebar categories={categories} selectedCategory={selectedCategory} />
           </aside>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-4 md:space-y-6 order-1 lg:order-2">
+          <div className="lg:col-span-3 space-y-6 order-2">
             {/* Search and Sort */}
             <ProductSearch searchQuery={searchQuery} sortBy={sortBy} />
 

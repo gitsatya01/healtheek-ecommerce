@@ -17,7 +17,9 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
-  Loader2
+  Loader2,
+  Menu,
+  X
 } from "lucide-react";
 import type { Product } from "@/lib/types";
 import Link from "next/link";
@@ -31,6 +33,7 @@ export default function AdminDashboard() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [activeSection, setActiveSection] = useState<'products' | 'categories'>('products');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Product form
   const [prodForm, setProdForm] = useState({ 
@@ -107,6 +110,7 @@ export default function AdminDashboard() {
     }
     setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
     setEditProdId(null);
+    setShowAddForm(false);
   };
     const handleProdEdit = (product: Product) => {
     setProdForm({
@@ -121,6 +125,7 @@ export default function AdminDashboard() {
       isNew: product.isNew || false,
     });
     setEditProdId(product.id!);
+    setShowAddForm(true);
   };
   const handleProdDelete = async (id: string) => {
     await deleteDoc(doc(db, "products", id));
@@ -144,6 +149,7 @@ export default function AdminDashboard() {
     }
     setCatForm({ name: "", description: "" });
     setEditCatId(null);
+    setShowAddForm(false);
   };
   const handleCatEdit = (cat: any) => {
     setCatForm({
@@ -151,6 +157,7 @@ export default function AdminDashboard() {
       description: cat.description || ""
     });
     setEditCatId(cat.id);
+    setShowAddForm(true);
   };
   const handleCatDelete = async (id: string) => {
     await deleteDoc(doc(db, "categories", id));
@@ -175,12 +182,80 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-sm border-b">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            <h1 className="text-xl font-bold text-gray-800">Healtheek Admin</h1>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="bg-white w-64 h-full shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <h1 className="text-2xl font-bold text-gray-800">Healtheek</h1>
+              <p className="text-sm text-gray-600">Admin Panel</p>
+            </div>
+            <nav className="mt-6">
+              <button
+                onClick={() => {
+                  setActiveSection('products');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`flex items-center w-full px-6 py-3 text-left ${
+                  activeSection === 'products' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Package className="w-5 h-5 mr-3" />
+                Products
+              </button>
+              <button
+                onClick={() => {
+                  setActiveSection('categories');
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`flex items-center w-full px-6 py-3 text-left ${
+                  activeSection === 'categories' ? 'bg-teal-50 text-teal-600' : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Tag className="w-5 h-5 mr-3" />
+                Categories
+              </button>
+              <Link href="/admin/courses">
+                <button 
+                  className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <BookOpen className="w-5 h-5 mr-3" />
+                  Courses
+                </button>
+              </Link>
+            </nav>
+          </div>
+                  </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gray-800">Healtheek</h1>
           <p className="text-sm text-gray-600">Admin Panel</p>
-        </div>
+                  </div>
         <nav className="mt-6">
           <button
             onClick={() => setActiveSection('products')}
@@ -219,15 +294,15 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="ml-64 p-8">
+      <div className="lg:ml-64 p-4 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 lg:mb-8 gap-4">
+            <h2 className="text-xl lg:text-2xl font-bold text-gray-800">
               {activeSection === 'products' ? 'Products Management' : 'Categories Management'}
             </h2>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+              className="flex items-center justify-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 w-full sm:w-auto"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add {activeSection === 'products' ? 'Product' : 'Category'}
@@ -236,13 +311,27 @@ export default function AdminDashboard() {
 
           {/* Add/Edit Form */}
           {showAddForm && (
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h3 className="text-xl font-semibold mb-4">
-                {editProdId || editCatId ? 'Edit' : 'Add'} {activeSection === 'products' ? 'Product' : 'Category'}
-              </h3>
+            <div className="bg-white rounded-lg shadow-lg p-4 lg:p-6 mb-6 lg:mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg lg:text-xl font-semibold">
+                  {editProdId || editCatId ? 'Edit' : 'Add'} {activeSection === 'products' ? 'Product' : 'Category'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setEditProdId(null);
+                    setEditCatId(null);
+                    setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
+                    setCatForm({ name: "", description: "" });
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               {activeSection === 'products' ? (
                 <form onSubmit={handleProdSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
                       <input
@@ -263,7 +352,7 @@ export default function AdminDashboard() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                       <input
@@ -276,18 +365,18 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                      <select
-                        name="category"
-                        value={prodForm.category}
-                        onChange={handleProdChange}
+                            <select
+                name="category"
+                value={prodForm.category}
+                onChange={handleProdChange}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.name}>{cat.name}</option>
-                        ))}
-                      </select>
+                required
+              >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                ))}
+              </select>
                     </div>
                   </div>
                   <div>
@@ -301,7 +390,7 @@ export default function AdminDashboard() {
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">MRP Price</label>
                       <input
@@ -336,22 +425,22 @@ export default function AdminDashboard() {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="isNew"
-                      name="isNew"
-                      checked={prodForm.isNew}
-                      onChange={handleProdChange}
-                      className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                    />
-                    <label htmlFor="isNew" className="text-sm text-gray-700">Mark as New Product</label>
-                  </div>
-                  <div className="flex gap-4">
+                <input
+                  type="checkbox"
+                  id="isNew"
+                  name="isNew"
+                  checked={prodForm.isNew}
+                  onChange={handleProdChange}
+                  className="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                />
+                <label htmlFor="isNew" className="text-sm text-gray-700">Mark as New Product</label>
+              </div>
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       type="submit"
-                      className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                      className="flex-1 bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700"
                     >
-                      {editProdId ? 'Update' : 'Add'} Product
+                      {editProdId ? 'Update Product' : 'Add Product'}
                     </button>
                     <button
                       type="button"
@@ -360,15 +449,15 @@ export default function AdminDashboard() {
                         setEditProdId(null);
                         setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                     >
                       Cancel
-                    </button>
+              </button>
                   </div>
-                </form>
+            </form>
               ) : (
                 <form onSubmit={handleCatSubmit} className="space-y-4">
-                  <div>
+                    <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
                     <input
                       name="name"
@@ -377,7 +466,7 @@ export default function AdminDashboard() {
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       required
                     />
-                  </div>
+                    </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea
@@ -388,12 +477,12 @@ export default function AdminDashboard() {
                       rows={4}
                     />
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       type="submit"
-                      className="flex-1 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                      className="flex-1 bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700"
                     >
-                      {editCatId ? 'Update' : 'Add'} Category
+                      {editCatId ? 'Update Category' : 'Add Category'}
                     </button>
                     <button
                       type="button"
@@ -402,7 +491,7 @@ export default function AdminDashboard() {
                         setEditCatId(null);
                         setCatForm({ name: "", description: "" });
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                     >
                       Cancel
                     </button>
@@ -416,45 +505,88 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             {activeSection === 'products' ? (
               loadingProducts ? (
-                <div className="p-8 text-center text-gray-500">Loading products...</div>
+                <div className="p-8 text-center text-gray-500">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  Loading products...
+                </div>
+              ) : products.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  No products found. Add your first product!
+                </div>
               ) : (
                 <div className="divide-y divide-gray-200">
                   {products.map(product => (
-                    <div key={product.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                      <div className="flex items-center gap-4">
-                        <img
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{product.name}</h4>
-                          <p className="text-sm text-gray-500">{product.subtitle}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-teal-600 font-semibold">₹{product.primePrice}</span>
-                            <span className="text-gray-400 line-through">₹{product.mrpPrice}</span>
-                            {product.isNew && (
-                              <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 rounded-full">New</span>
-                            )}
+                    <div key={product.id} className="p-4 lg:p-6 hover:bg-gray-50">
+                      {/* Mobile Layout */}
+                      <div className="lg:hidden space-y-3">
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 truncate">{product.name}</h4>
+                            <p className="text-sm text-gray-500 truncate">{product.subtitle}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-teal-600 font-semibold text-sm">₹{product.primePrice}</span>
+                              <span className="text-gray-400 line-through text-sm">₹{product.mrpPrice}</span>
+                              {product.isNew && (
+                                <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 rounded-full">New</span>
+                              )}
+                            </div>
                           </div>
                         </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleProdEdit(product)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleProdDelete(product.id!)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            handleProdEdit(product);
-                            setShowAddForm(true);
-                          }}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleProdDelete(product.id!)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+
+                      {/* Desktop Layout */}
+                      <div className="hidden lg:flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{product.name}</h4>
+                            <p className="text-sm text-gray-500">{product.subtitle}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-teal-600 font-semibold">₹{product.primePrice}</span>
+                              <span className="text-gray-400 line-through">₹{product.mrpPrice}</span>
+                              {product.isNew && (
+                                <span className="px-2 py-1 text-xs bg-teal-100 text-teal-800 rounded-full">New</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleProdEdit(product)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleProdDelete(product.id!)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -462,31 +594,60 @@ export default function AdminDashboard() {
               )
             ) : (
               loadingCategories ? (
-                <div className="p-8 text-center text-gray-500">Loading categories...</div>
+                <div className="p-8 text-center text-gray-500">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  Loading categories...
+                </div>
+              ) : categories.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  No categories found. Add your first category!
+                </div>
               ) : (
                 <div className="divide-y divide-gray-200">
                   {categories.map(cat => (
-                    <div key={cat.id} className="p-6 flex items-center justify-between hover:bg-gray-50">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{cat.name}</h4>
-                        <p className="text-sm text-gray-500">{cat.description}</p>
+                    <div key={cat.id} className="p-4 lg:p-6 hover:bg-gray-50">
+                      {/* Mobile Layout */}
+                      <div className="lg:hidden space-y-3">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{cat.name}</h4>
+                          <p className="text-sm text-gray-500 mt-1">{cat.description}</p>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleCatEdit(cat)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleCatDelete(cat.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            handleCatEdit(cat);
-                            setShowAddForm(true);
-                          }}
-                          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleCatDelete(cat.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+
+                      {/* Desktop Layout */}
+                      <div className="hidden lg:flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{cat.name}</h4>
+                          <p className="text-sm text-gray-500">{cat.description}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleCatEdit(cat)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleCatDelete(cat.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

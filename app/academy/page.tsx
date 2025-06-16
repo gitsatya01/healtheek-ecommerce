@@ -159,54 +159,54 @@ export default async function AcademyPage() {
               <p className="text-gray-600">Check back soon for exciting new courses!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-              {courses.map((course) => (
-                <Card key={course.id} className="overflow-hidden hover:shadow-xl transition-shadow">
-                  <div className="relative">
-                    <Image
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            {courses.map((course) => (
+              <Card key={course.id} className="overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="relative">
+                  <Image
                       src={course.imageUrl || "/placeholder.svg"}
-                      alt={course.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <PlayCircle className="w-16 h-16 text-white" />
+                    alt={course.title}
+                    width={300}
+                    height={200}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <PlayCircle className="w-16 h-16 text-white" />
+                  </div>
+                </div>
+
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <span className="text-sm text-gray-600 ml-1">{course.rating}</span>
                     </div>
+                    <span className="text-gray-400">•</span>
+                      <span className="text-sm text-gray-600">{course.studentCount}+ students</span>
                   </div>
 
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex items-center">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600 ml-1">{course.rating}</span>
-                      </div>
-                      <span className="text-gray-400">•</span>
-                      <span className="text-sm text-gray-600">{course.studentCount}+ students</span>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
+                  <p className="text-gray-600 mb-4">{course.description}</p>
+
+                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {course.duration}
                     </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{course.title}</h3>
-                    <p className="text-gray-600 mb-4">{course.description}</p>
-
-                    <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {course.duration}
-                      </div>
-                      <div className="flex items-center">
-                        <BookOpen className="w-4 h-4 mr-1" />
-                        {course.modules} modules
-                      </div>
-                      {course.certificate && (
-                        <div className="flex items-center">
-                          <Award className="w-4 h-4 mr-1" />
-                          Certificate
-                        </div>
-                      )}
+                    <div className="flex items-center">
+                      <BookOpen className="w-4 h-4 mr-1" />
+                      {course.modules} modules
                     </div>
+                    {course.certificate && (
+                      <div className="flex items-center">
+                        <Award className="w-4 h-4 mr-1" />
+                        Certificate
+                      </div>
+                    )}
+                  </div>
 
-                    <div className="flex items-center justify-between">
-                      <div>
+                  <div className="flex items-center justify-between">
+                    <div>
                         <span className="text-2xl font-bold text-teal-600">
                           ₹{course.discountedPrice.toLocaleString()}
                         </span>
@@ -215,13 +215,13 @@ export default async function AcademyPage() {
                             ₹{course.originalPrice.toLocaleString()}
                           </span>
                         )}
-                      </div>
-                      <Button className="bg-teal-600 hover:bg-teal-700">Enroll Now</Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <Button className="bg-teal-600 hover:bg-teal-700">Enroll Now</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           )}
         </div>
       </section>
@@ -259,13 +259,13 @@ export default async function AcademyPage() {
             ].map((story, index) => (
               <Card key={index} className="text-center">
                 <CardContent className="pt-8">
-                  <Image
+                    <Image
                     src={story.image}
                     alt={story.name}
                     width={100}
                     height={100}
                     className="rounded-full mx-auto mb-4"
-                  />
+                    />
                   <blockquote className="text-gray-600 mb-4 italic">"{story.quote}"</blockquote>
                   <div>
                     <div className="font-semibold text-gray-900">{story.name}</div>

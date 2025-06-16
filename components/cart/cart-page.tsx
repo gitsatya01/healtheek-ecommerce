@@ -112,7 +112,7 @@ export function CartPage() {
           </div>
 
           <Link href="/checkout">
-            <Button className="w-full mt-6 bg-teal-600 hover:bg-teal-700">Proceed to Checkout</Button>
+          <Button className="w-full mt-6 bg-teal-600 hover:bg-teal-700">Proceed to Checkout</Button>
           </Link>
 
           <Link href="/products">

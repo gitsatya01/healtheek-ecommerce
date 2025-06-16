@@ -49,10 +49,10 @@ auth.onAuthStateChanged((user) => {
 export const getAnalyticsClient = () => {
   if (typeof window !== "undefined") {
     try {
-      // Import here to avoid SSR issues
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { getAnalytics } = require("firebase/analytics");
-      return getAnalytics(app);
+    // Import here to avoid SSR issues
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getAnalytics } = require("firebase/analytics");
+    return getAnalytics(app);
     } catch (error) {
       console.warn("Analytics not available:", error);
       return null;

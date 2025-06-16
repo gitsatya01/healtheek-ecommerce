@@ -104,9 +104,9 @@ export function Header() {
                         <div className="space-y-2">
                           <Link href="/login">
                             <Button variant="outline" className="justify-start w-full" onClick={() => setIsMobileMenuOpen(false)}>
-                              <User className="w-4 h-4 mr-2" />
-                              Login
-                            </Button>
+                    <User className="w-4 h-4 mr-2" />
+                    Login
+                  </Button>
                           </Link>
                           <Link href="/signup">
                             <Button className="justify-start w-full bg-blue-600 hover:bg-blue-700" onClick={() => setIsMobileMenuOpen(false)}>
@@ -150,7 +150,7 @@ export function Header() {
                 {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="hidden md:flex">
+            <Button variant="ghost" size="sm" className="hidden md:flex">
                         <User className="w-4 h-4 mr-2" />
                         <span className="hidden lg:inline">{userData?.email?.split('@')[0]}</span>
                       </Button>
@@ -180,9 +180,9 @@ export function Header() {
                   <div className="hidden md:flex items-center space-x-2">
                     <Link href="/login">
                       <Button variant="ghost" size="sm">
-                        <User className="w-4 h-4 mr-2" />
-                        <span className="hidden lg:inline">Login</span>
-                      </Button>
+              <User className="w-4 h-4 mr-2" />
+              <span className="hidden lg:inline">Login</span>
+            </Button>
                     </Link>
                     <Link href="/signup">
                       <Button size="sm" className="bg-blue-600 hover:bg-blue-700">

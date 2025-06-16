@@ -49,24 +49,24 @@ export function ProductSearch({ searchQuery, sortBy }: ProductSearchProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm">
       {/* Mobile Layout */}
-      <div className="flex flex-col space-y-3 md:hidden">
+      <div className="flex flex-col space-y-4 md:hidden">
         {/* Search Bar */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             type="text"
-            placeholder="Search you medicine"
+            placeholder="Search your medicine"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="pl-10 pr-16 h-11 text-base"
+            className="pl-12 pr-20 h-12 text-base border-gray-200 focus:border-teal-500 focus:ring-teal-500"
             disabled={isPending}
           />
           <Button
             size="sm"
-            className="absolute right-1 top-1 bottom-1 bg-teal-600 hover:bg-teal-700 px-3"
+            className="absolute right-2 top-2 bottom-2 bg-teal-600 hover:bg-teal-700 px-4 font-medium"
             onClick={handleSearch}
             disabled={isPending}
           >
@@ -76,9 +76,9 @@ export function ProductSearch({ searchQuery, sortBy }: ProductSearchProps) {
 
         {/* Sort Dropdown */}
         <Select value={sortBy} onValueChange={(value) => updateSearchParams("sort", value)} disabled={isPending}>
-          <SelectTrigger className="h-11">
+          <SelectTrigger className="h-12 border-gray-200 focus:border-teal-500 focus:ring-teal-500">
             <div className="flex items-center">
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
+              <SlidersHorizontal className="w-5 h-5 mr-3 text-teal-600" />
               <SelectValue placeholder="Default Sorting" />
             </div>
           </SelectTrigger>
@@ -101,7 +101,7 @@ export function ProductSearch({ searchQuery, sortBy }: ProductSearchProps) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             type="text"
-            placeholder="Search you medicine"
+            placeholder="Search your medicine"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
             onKeyPress={handleKeyPress}

@@ -17,25 +17,34 @@ export function PrimeFormulas({ products }: PrimeFormulasProps) {
         </div>
 
         {products.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
-            {products.slice(0, 3).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
+              {products.slice(0, 2).map((product) => (
+                <div key={product.id} className="col-span-1 md:col-span-1">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+              {products.length > 2 && (
+                <div className="hidden md:block col-span-1">
+                  <ProductCard product={products[2]} />
+                </div>
+              )}
+            </div>
+
+            {products.length > 3 && (
+              <div className="text-center mt-6 md:mt-8">
+                <a
+                  href="/products/category/prime-formula"
+                  className="inline-flex items-center px-4 md:px-6 py-2 md:py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors text-sm md:text-base"
+                >
+                  View All Prime Formulas
+                </a>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-8">
             <p className="text-gray-500">No Prime Formula products available</p>
-          </div>
-        )}
-
-        {products.length > 3 && (
-          <div className="text-center mt-6 md:mt-8">
-            <a
-              href="/products/category/prime-formula"
-              className="inline-flex items-center px-4 md:px-6 py-2 md:py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors text-sm md:text-base"
-            >
-              View All Prime Formulas
-            </a>
           </div>
         )}
       </div>

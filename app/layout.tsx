@@ -36,10 +36,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
+        <CartProvider>
+          {children}
+          <Toaster />
+        </CartProvider>
         </AuthProvider>
       </body>
     </html>

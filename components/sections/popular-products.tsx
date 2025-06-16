@@ -18,10 +18,17 @@ export function PopularProducts({ products }: PopularProductsProps) {
 
         {products.length > 0 ? (
           <>
-            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
-              {products.slice(0, 3).map((product) => (
-                <ProductCard key={product.id} product={product} />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
+              {products.slice(0, 2).map((product) => (
+                <div key={product.id} className="col-span-1 md:col-span-1">
+                  <ProductCard product={product} />
+                </div>
               ))}
+              {products.length > 2 && (
+                <div className="hidden md:block col-span-1">
+                  <ProductCard product={products[2]} />
+                </div>
+              )}
             </div>
 
             {products.length > 3 && (
