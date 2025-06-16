@@ -82,10 +82,10 @@ export function Header() {
                               {userData?.role} Account
                             </p>
                           </div>
-                          <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
+                          <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/cart'}>
                             <Button variant="outline" className="justify-start w-full" onClick={() => setIsMobileMenuOpen(false)}>
                               <Settings className="w-4 h-4 mr-2" />
-                              Dashboard
+                              {userData?.role === 'admin' ? 'Dashboard' : 'My Cart'}
                             </Button>
                           </Link>
                           <Button 
@@ -164,9 +164,9 @@ export function Header() {
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
+                        <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/cart'}>
                           <Settings className="w-4 h-4 mr-2" />
-                          Dashboard
+                          {userData?.role === 'admin' ? 'Dashboard' : 'My Cart'}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

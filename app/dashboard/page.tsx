@@ -2,15 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useCart } from "@/components/cart/cart-context";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, LogOut, User, Calendar, BookOpen, Award, Settings, Heart, Package, ShoppingBag } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, LogOut, User, Heart, Package, ShoppingBag, ShoppingCart, Plus, Minus, Trash2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Order {
   id: string;
@@ -28,6 +31,7 @@ interface Order {
 
 export default function UserDashboard() {
   const { user, userData, loading } = useAuth();
+  const { items: cartItems, total: cartTotal, updateQuantity, removeItem } = useCart();
   const router = useRouter();
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -108,7 +112,7 @@ export default function UserDashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className="w-8 h-8 text-green-600 mr-2" />
-              <h1 className="text-xl font-bold text-gray-900">HealthEek</h1>
+              <h1 className="text-xl font-bold text-gray-900">HealthEek - My Cart</h1>
             </div>
             
             <div className="flex items-center space-x-4">
@@ -136,50 +140,50 @@ export default function UserDashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {userData?.email?.split('@')[0]}!
+            Your Shopping Cart
           </h2>
           <p className="text-gray-600">
-            Continue your wellness journey with HealthEek
+            Manage your cart and complete your purchase
           </p>
         </div>
 
-        {/* Quick Stats */}
+        {/* Cart Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Courses Enrolled</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Items in Cart</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{cartItems.length}</div>
               <p className="text-xs text-muted-foreground">
-                +1 from last month
+                {cartItems.reduce((sum, item) => sum + item.quantity, 0)} total quantity
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Certificates Earned</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Cart Total</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1</div>
+              <div className="text-2xl font-bold">₹{cartTotal.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">
-                Keep learning to earn more
+                {cartTotal > 500 ? 'Free shipping included' : `₹${(500 - cartTotal).toFixed(0)} more for free shipping`}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Days Active</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Recent Orders</CardTitle>
+              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">{recentOrders.length}</div>
               <p className="text-xs text-muted-foreground">
-                This month
+                Last 3 orders
               </p>
             </CardContent>
           </Card>
@@ -188,16 +192,16 @@ export default function UserDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <Link href="/academy">
+            <Link href="/products">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <BookOpen className="w-5 h-5 mr-2 text-blue-600" />
-                  Browse Courses
+                  <ShoppingBag className="w-5 h-5 mr-2 text-blue-600" />
+                  Continue Shopping
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  Explore our comprehensive health and wellness courses
+                  Browse our products and add more items to your cart
                 </p>
               </CardContent>
             </Link>
@@ -207,49 +211,124 @@ export default function UserDashboard() {
             <Link href="/cart">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <ShoppingBag className="w-5 h-5 mr-2 text-green-600" />
-                  My Cart
+                  <ShoppingCart className="w-5 h-5 mr-2 text-green-600" />
+                  View Full Cart
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  View and manage items in your shopping cart
+                  Review all items and proceed to checkout
                 </p>
               </CardContent>
             </Link>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Package className="w-5 h-5 mr-2 text-orange-600" />
-                Order History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Track your orders and view purchase history
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Award className="w-5 h-5 mr-2 text-purple-600" />
-                My Certificates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                View and download your earned certificates
-              </p>
-            </CardContent>
-          </Card>
+          {cartItems.length > 0 && (
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <Link href="/checkout">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <ArrowRight className="w-5 h-5 mr-2 text-orange-600" />
+                    Checkout Now
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600">
+                    Complete your purchase securely
+                  </p>
+                </CardContent>
+              </Link>
+            </Card>
+          )}
         </div>
 
-        {/* Recent Orders */}
+        {/* Cart Items and Recent Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Current Cart Items */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Current Cart Items</span>
+                <Badge variant="secondary">{cartItems.length} items</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cartItems.length > 0 ? (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="relative w-12 h-12 bg-white rounded-lg overflow-hidden">
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <Package className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        <p className="text-xs text-gray-500">₹{item.primePrice.toLocaleString()} each</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </Button>
+                        <span className="text-sm font-medium w-8 text-center">{item.quantity}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => removeItem(item.id)}
+                          className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Separator />
+                  <div className="flex justify-between items-center font-medium">
+                    <span>Total: ₹{cartTotal.toLocaleString()}</span>
+                    <Link href="/checkout">
+                      <Button size="sm">
+                        Checkout <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <ShoppingCart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-sm text-gray-500 mb-4">Your cart is empty</p>
+                  <Link href="/products">
+                    <Button size="sm">
+                      Start Shopping
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Recent Orders */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -297,40 +376,6 @@ export default function UserDashboard() {
               )}
             </CardContent>
           </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Completed "Introduction to Nutrition"</p>
-                    <p className="text-xs text-gray-500">2 days ago</p>
-                  </div>
-                </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Started "Mindfulness and Meditation"</p>
-                  <p className="text-xs text-gray-500">1 week ago</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Earned certificate for "Basic Fitness"</p>
-                  <p className="text-xs text-gray-500">2 weeks ago</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
         </div>
       </main>
     </div>

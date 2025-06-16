@@ -1,11 +1,19 @@
 import type { Product, Category } from "./types"
 
-// Categories - Only 4 main sections
+// Categories - Complete list of all product categories
 export const categories: Category[] = [
   { id: "smart-formula-2025", name: "Smart Formula's", productCount: 8 },
   { id: "prime-formula", name: "Prime Formula's", productCount: 5 },
   { id: "popular-products", name: "Popular Products", productCount: 15 },
   { id: "business-tools", name: "Business Tools", productCount: 3 },
+  { id: "cancer", name: "Cancer Support", productCount: 2 },
+  { id: "daily-nutrition", name: "Daily Nutrition", productCount: 2 },
+  { id: "diabetes", name: "Diabetes Care", productCount: 2 },
+  { id: "fertility", name: "Fertility Support", productCount: 2 },
+  { id: "fitness", name: "Fitness & Sports", productCount: 2 },
+  { id: "kids-health", name: "Kids Health", productCount: 2 },
+  { id: "women-health", name: "Women's Health", productCount: 2 },
+  { id: "wellness-coach", name: "Wellness Coach", productCount: 2 },
 ]
 
 // Extended product data with new categories

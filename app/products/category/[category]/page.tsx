@@ -8,16 +8,17 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 interface Props {
-  params: { category: string }
-  searchParams: {
+  params: Promise<{ category: string }>
+  searchParams: Promise<{
     sort?: string
     search?: string
     page?: string
-  }
+  }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const category = await getCategory(params.category)
+  const { category: categoryId } = await params
+  const category = await getCategory(categoryId)
 
   if (!category) {
     return {
@@ -39,10 +40,14 @@ export async function generateStaticParams() {
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
+  // Await both params and searchParams for Next.js 15 compatibility
+  const { category: categoryId } = await params
+  const searchParamsData = await searchParams
+  
   const [products, categories, category] = await Promise.all([
     getProducts(),
     getCategories(),
-    getCategory(params.category),
+    getCategory(categoryId),
   ])
 
   if (!category) {
@@ -50,17 +55,17 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   }
 
   // Server-side filtering and sorting
-  const sortBy = searchParams.sort || "default"
-  const searchQuery = searchParams.search || ""
-  const currentPage = Number(searchParams.page) || 1
+  const sortBy = searchParamsData.sort || "default"
+  const searchQuery = searchParamsData.search || ""
+  const currentPage = Number(searchParamsData.page) || 1
 
   let filteredProducts = products
 
   // Filter by category - handle popular products specially
-  if (params.category === "popular-products") {
+  if (categoryId === "popular-products") {
     filteredProducts = products.filter((p) => p.featured === true)
   } else {
-    filteredProducts = products.filter((p) => p.category === params.category)
+    filteredProducts = products.filter((p) => p.category === categoryId)
   }
 
   // Filter by search query on server
@@ -119,7 +124,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Category Sidebar */}
           <aside className="lg:col-span-1">
-            <CategorySidebar categories={categories} selectedCategory={params.category} />
+            <CategorySidebar categories={categories} selectedCategory={categoryId} />
           </aside>
 
           {/* Main Content */}
@@ -134,10 +139,10 @@ export default async function CategoryPage({ params, searchParams }: Props) {
               currentPage={currentPage}
               totalPages={totalPages}
               searchParams={{
-                category: params.category,
-                sort: searchParams.sort,
-                search: searchParams.search,
-                page: searchParams.page,
+                category: categoryId,
+                sort: searchParamsData.sort,
+                search: searchParamsData.search,
+                page: searchParamsData.page,
               }}
             />
           </div>

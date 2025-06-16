@@ -62,7 +62,7 @@ function CategoryList({ categories, selectedCategory }: { categories: Category[]
       </Link>
 
       {categories.map((category) => (
-        <Link key={category.id} href={`/products/category/${category.id}`}>
+        <Link key={category.id} href={`/products?category=${category.id}`}>
           <Button
             variant={selectedCategory === category.id ? "default" : "ghost"}
             className={`w-full justify-between text-left h-auto py-2 md:py-3 px-3 md:px-4 text-sm md:text-base ${

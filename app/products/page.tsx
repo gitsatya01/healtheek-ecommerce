@@ -25,16 +25,19 @@ interface SearchParams {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
+  // Await searchParams for Next.js 15 compatibility
+  const params = await searchParams
+  
   // Server-side data fetching
   const [products, categories] = await Promise.all([getProducts(), getCategories()])
 
   // Server-side filtering and sorting
-  const selectedCategory = searchParams.category || "all"
-  const sortBy = searchParams.sort || "default"
-  const searchQuery = searchParams.search || ""
-  const currentPage = Number(searchParams.page) || 1
+  const selectedCategory = params.category || "all"
+  const sortBy = params.sort || "default"
+  const searchQuery = params.search || ""
+  const currentPage = Number(params.page) || 1
 
   let filteredProducts = products
 
@@ -114,7 +117,7 @@ export default async function ProductsPage({
               totalProducts={sortedProducts.length}
               currentPage={currentPage}
               totalPages={totalPages}
-              searchParams={searchParams}
+              searchParams={params}
             />
           </div>
         </div>

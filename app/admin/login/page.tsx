@@ -15,35 +15,25 @@ import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const { user, userData, loading: authLoading } = useAuth();
-  const [email, setEmail] = useState("admin@healtheek.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string[]>([]);
   const router = useRouter();
-
-  const addDebugInfo = (info: string) => {
-    setDebugInfo(prev => [...prev, `${new Date().toLocaleTimeString()}: ${info}`]);
-  };
 
   useEffect(() => {
     if (!authLoading) {
       if (user && userData) {
-        addDebugInfo(`User authenticated: ${user.email}`);
         if (userData.role === 'admin') {
-          addDebugInfo("User has admin role, redirecting to dashboard");
           router.push("/admin/dashboard");
         } else {
-          addDebugInfo(`User has role: ${userData.role}, redirecting to appropriate page`);
           if (userData.role === 'user') {
             router.push("/dashboard");
           } else {
             router.push("/login");
           }
         }
-      } else {
-        addDebugInfo("No user authenticated");
       }
     }
   }, [user, userData, authLoading, router]);
@@ -52,25 +42,16 @@ export default function AdminLogin() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    addDebugInfo(`Attempting login with email: ${email}`);
 
     try {
-      addDebugInfo("Calling signInWithEmailAndPassword...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
-      addDebugInfo(`Login successful for user: ${userCredential.user.email}`);
-      addDebugInfo(`User UID: ${userCredential.user.uid}`);
-      
       const token = await userCredential.user.getIdToken();
-      addDebugInfo("Got ID token, setting cookie");
-      
       document.cookie = `token=${token}; path=/; max-age=86400`; // 24 hours
       
-      addDebugInfo("Redirecting to dashboard...");
       router.push("/admin/dashboard");
       
     } catch (err: any) {
-      addDebugInfo(`Login error: ${err.code} - ${err.message}`);
       console.error("Login error:", err);
       
       let errorMessage = "Login failed. Please try again.";
@@ -104,22 +85,6 @@ export default function AdminLogin() {
     }
   };
 
-  const testFirebaseConnection = async () => {
-    addDebugInfo("Testing Firebase connection...");
-    try {
-      // Test if Firebase is initialized
-      if (auth) {
-        addDebugInfo("✅ Firebase Auth is initialized");
-        addDebugInfo(`Auth domain: ${auth.config.authDomain}`);
-        addDebugInfo(`Project ID: ${auth.app.options.projectId}`);
-      } else {
-        addDebugInfo("❌ Firebase Auth is not initialized");
-      }
-    } catch (error: any) {
-      addDebugInfo(`❌ Firebase connection error: ${error.message}`);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -139,7 +104,7 @@ export default function AdminLogin() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@healtheek.com"
+                  placeholder="Enter your admin email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -179,66 +144,28 @@ export default function AdminLogin() {
                 </Alert>
               )}
 
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 h-11 bg-teal-600 hover:bg-teal-700"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={testFirebaseConnection}
-                  disabled={loading}
-                  className="h-11"
-                >
-                  Test
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-11 bg-teal-600 hover:bg-teal-700"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
             </form>
-
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Demo Credentials:</h4>
-              <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Email:</strong> admin@healtheek.com</p>
-                <p><strong>Password:</strong> admin123</p>
-                <p className="text-orange-600 mt-2">
-                  ⚠️ User created automatically via script
-                </p>
-              </div>
-            </div>
-
-            {debugInfo.length > 0 && (
-              <div className="mt-4 p-3 bg-gray-900 text-green-400 rounded text-xs font-mono max-h-32 overflow-y-auto">
-                <div className="text-white mb-1">Debug Info:</div>
-                {debugInfo.map((info, index) => (
-                  <div key={index} className="mb-1">{info}</div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 space-y-2">
+        <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             Protected by Firebase Authentication
           </p>
-          <Button
-            variant="link"
-            onClick={() => window.location.href = '/test-firebase'}
-            className="text-teal-600 hover:text-teal-700"
-          >
-            🔧 Advanced Firebase Testing
-          </Button>
         </div>
       </div>
     </div>

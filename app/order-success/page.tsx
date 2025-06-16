@@ -169,8 +169,8 @@ function OrderSuccessContent() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <div className="space-y-2">
-              <Link href="/dashboard">
-                <Button className="w-full">Go to Dashboard</Button>
+              <Link href="/cart">
+                <Button className="w-full">Go to Cart</Button>
               </Link>
               <Link href="/">
                 <Button variant="outline" className="w-full">
@@ -374,9 +374,9 @@ function OrderSuccessContent() {
                     <Download className="w-4 h-4 mr-2" />
                     Download Invoice
                   </Button>
-                  <Link href="/dashboard">
+                  <Link href="/cart">
                     <Button className="w-full">
-                      View Order History
+                      Back to Cart
                     </Button>
                   </Link>
                   <Link href="/">
