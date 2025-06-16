@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "@/lib/firebase";
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
+import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Package, 
@@ -13,14 +15,18 @@ import {
   Edit2, 
   Trash2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  BookOpen,
+  Loader2
 } from "lucide-react";
 import type { Product } from "@/lib/types";
+import Link from "next/link";
 
 export default function AdminDashboard() {
+  const { user, userData, loading } = useAuth();
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-  const [user, setUser] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [activeSection, setActiveSection] = useState<'products' | 'categories'>('products');
@@ -45,12 +51,19 @@ export default function AdminDashboard() {
   const [editCatId, setEditCatId] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) window.location.href = "/admin/login";
-    });
-    return () => unsubscribe();
-  }, []);
+    if (!loading) {
+      if (!user) {
+        router.push("/admin/login");
+      } else if (userData?.role !== 'admin') {
+        // Redirect non-admin users to their appropriate dashboard
+        if (userData?.role === 'user') {
+          router.push("/dashboard");
+        } else {
+          router.push("/login");
+        }
+      }
+    }
+  }, [user, userData, loading, router]);
 
   useEffect(() => {
     setLoadingProducts(true);
@@ -148,7 +161,17 @@ export default function AdminDashboard() {
     window.location.href = "/admin/login";
   };
 
-  if (!user) return null;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
+  if (!user || userData?.role !== 'admin') {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -177,6 +200,12 @@ export default function AdminDashboard() {
             <Tag className="w-5 h-5 mr-3" />
             Categories
           </button>
+          <Link href="/admin/courses">
+            <button className="flex items-center w-full px-6 py-3 text-left text-gray-600 hover:bg-gray-50">
+              <BookOpen className="w-5 h-5 mr-3" />
+              Courses
+            </button>
+          </Link>
         </nav>
         <div className="absolute bottom-0 w-full p-6">
           <button

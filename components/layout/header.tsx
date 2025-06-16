@@ -1,18 +1,38 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, User, Menu } from "lucide-react"
+import { ShoppingCart, User, Menu, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/components/cart/cart-context"
+import { useAuth } from "@/contexts/auth-context"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 import { useState } from "react"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const { items } = useCart()
+  const { user, userData, loading } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
+  }
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -50,10 +70,54 @@ export function Header() {
                     </Link>
                   ))}
                   <hr className="my-4" />
-                  <Button variant="outline" className="justify-start" onClick={() => setIsMobileMenuOpen(false)}>
-                    <User className="w-4 h-4 mr-2" />
-                    Login
-                  </Button>
+                  {!loading && (
+                    <>
+                      {user ? (
+                        <div className="space-y-2">
+                          <div className="px-4 py-2">
+                            <p className="text-sm font-medium text-gray-900">
+                              {userData?.email?.split('@')[0]}
+                            </p>
+                            <p className="text-xs text-gray-500 capitalize">
+                              {userData?.role} Account
+                            </p>
+                          </div>
+                          <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
+                            <Button variant="outline" className="justify-start w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                              <Settings className="w-4 h-4 mr-2" />
+                              Dashboard
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="outline" 
+                            className="justify-start w-full text-red-600 hover:text-red-700" 
+                            onClick={() => {
+                              handleLogout()
+                              setIsMobileMenuOpen(false)
+                            }}
+                          >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Logout
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Link href="/login">
+                            <Button variant="outline" className="justify-start w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                              <User className="w-4 h-4 mr-2" />
+                              Login
+                            </Button>
+                          </Link>
+                          <Link href="/signup">
+                            <Button className="justify-start w-full bg-blue-600 hover:bg-blue-700" onClick={() => setIsMobileMenuOpen(false)}>
+                              <User className="w-4 h-4 mr-2" />
+                              Sign Up
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
@@ -80,11 +144,56 @@ export function Header() {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Desktop Login */}
-            <Button variant="ghost" size="sm" className="hidden md:flex">
-              <User className="w-4 h-4 mr-2" />
-              <span className="hidden lg:inline">Login</span>
-            </Button>
+            {/* Desktop Auth */}
+            {!loading && (
+              <>
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="hidden md:flex">
+                        <User className="w-4 h-4 mr-2" />
+                        <span className="hidden lg:inline">{userData?.email?.split('@')[0]}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        <div>
+                          <p className="font-medium">{userData?.email?.split('@')[0]}</p>
+                          <p className="text-xs text-gray-500 capitalize">{userData?.role} Account</p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={userData?.role === 'admin' ? '/admin/dashboard' : '/dashboard'}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="hidden md:flex items-center space-x-2">
+                    <Link href="/login">
+                      <Button variant="ghost" size="sm">
+                        <User className="w-4 h-4 mr-2" />
+                        <span className="hidden lg:inline">Login</span>
+                      </Button>
+                    </Link>
+                    <Link href="/signup">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                        <span className="hidden lg:inline">Sign Up</span>
+                        <span className="lg:hidden">Join</span>
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Cart */}
             <Link href="/cart">
