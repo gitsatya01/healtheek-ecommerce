@@ -1,4 +1,5 @@
 import { ProductCard } from "@/components/products/product-card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import type { Product } from "@/lib/types"
 
 interface BusinessToolsProps {
@@ -18,18 +19,41 @@ export function BusinessTools({ products }: BusinessToolsProps) {
 
         {products.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 max-w-4xl mx-auto">
-              {products.slice(0, 2).map((product) => (
-                <div key={product.id} className="col-span-1 md:col-span-1">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-              {products.length > 2 && (
-                <div className="hidden md:block col-span-1">
-                  <ProductCard product={products[2]} />
-                </div>
-              )}
-            </div>
+            {/* Static Grid for 1-3 products */}
+            {products.length <= 3 ? (
+              <div className={`grid gap-4 md:gap-6 max-w-4xl mx-auto ${
+                products.length === 1 ? 'grid-cols-1 max-w-sm' : 
+                products.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-2xl' :
+                'grid-cols-1 md:grid-cols-3'
+              }`}>
+                {products.map((product) => (
+                  <div key={product.id} className="col-span-1">
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Carousel for 4+ products */
+              <div className="max-w-5xl mx-auto">
+                <Carousel
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {products.map((product) => (
+                      <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3">
+                        <ProductCard product={product} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="hidden md:flex" />
+                  <CarouselNext className="hidden md:flex" />
+                </Carousel>
+              </div>
+            )}
 
             {products.length > 3 && (
               <div className="text-center mt-6 md:mt-8">

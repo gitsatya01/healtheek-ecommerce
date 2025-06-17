@@ -4,9 +4,10 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Star, ShoppingCart, Heart, Share2 } from "lucide-react"
+import { Star, ShoppingCart, Heart, Share2, ChevronLeft, ChevronRight } from "lucide-react"
 import { useCart } from "@/components/cart/cart-context"
 import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 import type { Product } from "@/lib/types"
 
 interface ProductDetailsProps {
@@ -16,6 +17,10 @@ interface ProductDetailsProps {
 export function ProductDetails({ product }: ProductDetailsProps) {
   const { addItem } = useCart()
   const { toast } = useToast()
+  
+  // Combine primary image with additional images
+  const allImages = [product.image, ...(product.images || [])].filter(img => img && img.trim() !== "")
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const handleAddToCart = () => {
     addItem(product)
@@ -25,6 +30,14 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     })
   }
 
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
+  }
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)
+  }
+
   const discountPercentage = Math.round(((product.mrpPrice - product.primePrice) / product.mrpPrice) * 100)
 
   return (
@@ -32,16 +45,66 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Product Images */}
         <div className="space-y-4">
-          <div className="aspect-square relative bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* Main Image Display */}
+          <div className="aspect-square relative bg-white rounded-lg shadow-sm overflow-hidden group">
             <Image
-              src={product.image || "/placeholder.svg"}
+              src={allImages[currentImageIndex] || "/placeholder.svg"}
               alt={product.name}
               fill
               className="object-contain p-8"
               priority
             />
             {product.isNew && <Badge className="absolute top-4 right-4 bg-orange-500 text-white">NEW</Badge>}
+            
+            {/* Navigation arrows for multiple images */}
+            {allImages.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
+
+          {/* Thumbnail Gallery */}
+          {allImages.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {allImages.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`aspect-square relative bg-white rounded-lg overflow-hidden border-2 transition-all ${
+                    currentImageIndex === index 
+                      ? 'border-teal-500 ring-2 ring-teal-200' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <Image
+                    src={image || "/placeholder.svg"}
+                    alt={`${product.name} ${index + 1}`}
+                    fill
+                    className="object-contain p-2"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Image Counter */}
+          {allImages.length > 1 && (
+            <div className="text-center text-sm text-gray-500">
+              {currentImageIndex + 1} of {allImages.length}
+            </div>
+          )}
         </div>
 
         {/* Product Info */}

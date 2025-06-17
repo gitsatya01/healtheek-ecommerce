@@ -74,43 +74,7 @@ export function HeroSection() {
               </div>
             </div>
 
-            {/* Mobile Product Cards - Shown below image on mobile */}
-            <div className="md:hidden mt-6 space-y-4">
-              <div className="bg-white rounded-lg shadow-lg p-4">
-              <div className="flex items-center space-x-3">
-                <Image
-                  src="/placeholder.svg?height=60&width=60"
-                  alt="ENCYO Product"
-                  width={60}
-                  height={60}
-                    className="rounded w-12 h-12"
-                />
-                  <div className="flex-1">
-                  <h3 className="font-semibold text-sm">ENCYO</h3>
-                  <p className="text-xs text-gray-600">A dual blend of herbs & Multivitamins with Omega 3</p>
-                  <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded mt-1">
-                    JUST LAUNCHED
-                  </span>
-                </div>
-              </div>
-            </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-4">
-              <div className="flex items-center space-x-3">
-                <Image
-                  src="/placeholder.svg?height=60&width=60"
-                  alt="HALE.O Product"
-                  width={60}
-                  height={60}
-                    className="rounded w-12 h-12"
-                />
-                  <div className="flex-1">
-                  <h3 className="font-semibold text-sm">HALE.O</h3>
-                  <p className="text-xs text-gray-600">A Formula For Overall Health</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { db, auth } from "@/lib/firebase";
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, onSnapshot, QuerySnapshot, DocumentData } from "firebase/firestore";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import type { Product } from "@/lib/types";
 import Link from "next/link";
+import { IconPicker, ColorSchemePicker } from "@/components/admin/icon-picker";
 
 export default function AdminDashboard() {
   const { user, userData, loading } = useAuth();
@@ -44,13 +45,14 @@ export default function AdminDashboard() {
     mrpPrice: "", 
     primePrice: "", 
     image: "", 
+    images: [""], // Additional images array
     category: "", 
     isNew: false 
   });
   const [editProdId, setEditProdId] = useState<string | null>(null);
   
   // Category form
-  const [catForm, setCatForm] = useState({ name: "", description: "" });
+  const [catForm, setCatForm] = useState({ name: "", description: "", icon: "", colorScheme: "healtheek-teal" });
   const [editCatId, setEditCatId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,41 +88,102 @@ export default function AdminDashboard() {
   }, []);
 
   // Product handlers
-    const handleProdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces, underscores, multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  };
+
+  const handleProdChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       setProdForm({ ...prodForm, [name]: (e.target as HTMLInputElement).checked });
     } else {
-      setProdForm({ ...prodForm, [name]: value });
+      if (name === 'name') {
+        // Auto-generate slug when name changes
+        const newSlug = generateSlug(value);
+        setProdForm({ ...prodForm, [name]: value, slug: newSlug });
+      } else {
+        setProdForm({ ...prodForm, [name]: value });
+      }
+    }
+  };
+
+  // Handle additional images
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...prodForm.images];
+    newImages[index] = value;
+    setProdForm({ ...prodForm, images: newImages });
+  };
+
+  const addImageField = () => {
+    setProdForm({ ...prodForm, images: [...prodForm.images, ""] });
+  };
+
+  const removeImageField = (index: number) => {
+    if (prodForm.images.length > 1) {
+      const newImages = prodForm.images.filter((_, i) => i !== index);
+      setProdForm({ ...prodForm, images: newImages });
     }
   };
   const handleProdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const productData = {
-      ...prodForm,
-      mrpPrice: Number(prodForm.mrpPrice),
-      primePrice: Number(prodForm.primePrice),
-      isNew: Boolean(prodForm.isNew),
-    };
+    try {
+      const productData = {
+        ...prodForm,
+        mrpPrice: Number(prodForm.mrpPrice),
+        primePrice: Number(prodForm.primePrice),
+        isNew: Boolean(prodForm.isNew),
+        images: prodForm.images.filter(img => img.trim() !== ""), // Remove empty image URLs
+      };
 
-    if (editProdId) {
-      await updateDoc(doc(db, "products", editProdId), productData);
-    } else {
-      await addDoc(collection(db, "products"), productData);
+      if (editProdId) {
+        const docRef = doc(db, "products", editProdId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+          alert("Error: Product no longer exists. It may have been deleted by another user.");
+          setEditProdId(null);
+          setShowAddForm(false);
+          return;
+        }
+        
+        await updateDoc(docRef, productData);
+        alert("Product updated successfully!");
+      } else {
+        await addDoc(collection(db, "products"), productData);
+        alert("Product added successfully!");
+      }
+      setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", images: [""], category: "", isNew: false });
+      setEditProdId(null);
+      setShowAddForm(false);
+    } catch (error: any) {
+      console.error("Error saving product:", error);
+      if (error.code === 'not-found') {
+        alert("Error: Product not found. It may have been deleted by another user.");
+        setEditProdId(null);
+        setShowAddForm(false);
+      } else {
+        alert(`Error saving product: ${error.message}`);
+      }
     }
-    setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
-    setEditProdId(null);
-    setShowAddForm(false);
   };
     const handleProdEdit = (product: Product) => {
+    // Generate slug if it doesn't exist
+    const productSlug = product.slug || generateSlug(product.name || "");
+    
     setProdForm({
       name: product.name || "",
       subtitle: product.subtitle || "",
-      slug: product.slug || "",
+      slug: productSlug,
       description: product.description || "",
       mrpPrice: product.mrpPrice?.toString() || "",
       primePrice: product.primePrice?.toString() || "",
       image: product.image || "",
+      images: product.images || [""],
       category: product.category || "",
       isNew: product.isNew || false,
     });
@@ -128,39 +191,121 @@ export default function AdminDashboard() {
     setShowAddForm(true);
   };
   const handleProdDelete = async (id: string) => {
-    await deleteDoc(doc(db, "products", id));
+    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      const docRef = doc(db, "products", id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        alert("Error: Product no longer exists. It may have already been deleted.");
+        return;
+      }
+      
+      await deleteDoc(docRef);
+      alert("Product deleted successfully!");
+    } catch (error: any) {
+      console.error("Error deleting product:", error);
+      if (error.code === 'not-found') {
+        alert("Error: Product not found. It may have already been deleted.");
+      } else {
+        alert(`Error deleting product: ${error.message}`);
+      }
+    }
   };
   // Category handlers
   const handleCatChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setCatForm({ ...catForm, [e.target.name]: e.target.value });
   };
+
+  const handleIconSelect = (iconPath: string, iconName: string) => {
+    setCatForm({ ...catForm, icon: iconPath });
+  };
+
+  const handleColorSchemeSelect = (colorScheme: string) => {
+    setCatForm({ ...catForm, colorScheme });
+  };
   const handleCatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editCatId) {
-      await updateDoc(doc(db, "categories", editCatId), {
-        name: catForm.name,
-        description: catForm.description,
-      });
-    } else {
-      await addDoc(collection(db, "categories"), {
-        name: catForm.name,
-        description: catForm.description,
-      });
+    try {
+      if (editCatId) {
+        // Check if document exists before updating
+        const docRef = doc(db, "categories", editCatId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+          alert("Error: Category no longer exists. It may have been deleted by another user.");
+          setEditCatId(null);
+          setShowAddForm(false);
+          return;
+        }
+        
+        await updateDoc(docRef, {
+          name: catForm.name,
+          description: catForm.description,
+          icon: catForm.icon,
+          colorScheme: catForm.colorScheme,
+        });
+        alert("Category updated successfully!");
+      } else {
+        await addDoc(collection(db, "categories"), {
+          name: catForm.name,
+          description: catForm.description,
+          icon: catForm.icon,
+          colorScheme: catForm.colorScheme,
+        });
+        alert("Category added successfully!");
+      }
+      setCatForm({ name: "", description: "", icon: "", colorScheme: "healtheek-teal" });
+      setEditCatId(null);
+      setShowAddForm(false);
+    } catch (error: any) {
+      console.error("Error saving category:", error);
+      if (error.code === 'not-found') {
+        alert("Error: Category not found. It may have been deleted by another user.");
+        setEditCatId(null);
+        setShowAddForm(false);
+      } else {
+        alert(`Error saving category: ${error.message}`);
+      }
     }
-    setCatForm({ name: "", description: "" });
-    setEditCatId(null);
-    setShowAddForm(false);
   };
   const handleCatEdit = (cat: any) => {
     setCatForm({
       name: cat.name || "",
-      description: cat.description || ""
+      description: cat.description || "",
+      icon: cat.icon || "",
+      colorScheme: cat.colorScheme || "healtheek-teal"
     });
     setEditCatId(cat.id);
     setShowAddForm(true);
   };
   const handleCatDelete = async (id: string) => {
-    await deleteDoc(doc(db, "categories", id));
+    if (!confirm("Are you sure you want to delete this category? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      const docRef = doc(db, "categories", id);
+      const docSnap = await getDoc(docRef);
+      
+      if (!docSnap.exists()) {
+        alert("Error: Category no longer exists. It may have already been deleted.");
+        return;
+      }
+      
+      await deleteDoc(docRef);
+      alert("Category deleted successfully!");
+    } catch (error: any) {
+      console.error("Error deleting category:", error);
+      if (error.code === 'not-found') {
+        alert("Error: Category not found. It may have already been deleted.");
+      } else {
+        alert(`Error deleting category: ${error.message}`);
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -321,8 +466,8 @@ export default function AdminDashboard() {
                     setShowAddForm(false);
                     setEditProdId(null);
                     setEditCatId(null);
-                    setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
-                    setCatForm({ name: "", description: "" });
+                    setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", images: [""], category: "", isNew: false });
+                    setCatForm({ name: "", description: "", icon: "", colorScheme: "healtheek-teal" });
                   }}
                   className="p-2 hover:bg-gray-100 rounded-lg"
                 >
@@ -354,13 +499,16 @@ export default function AdminDashboard() {
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Slug 
+                        <span className="text-xs text-gray-500 font-normal">(Auto-generated from product name)</span>
+                      </label>
                       <input
                         name="slug"
                         value={prodForm.slug}
-                        onChange={handleProdChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        required
+                        readOnly
+                        className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+                        placeholder="Will be auto-generated from product name"
                       />
                     </div>
                     <div>
@@ -414,15 +562,56 @@ export default function AdminDashboard() {
                       />
                     </div>
                   </div>
+                  {/* Primary Image */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Primary Image URL</label>
                     <input
                       name="image"
                       value={prodForm.image}
                       onChange={handleProdChange}
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       required
+                      placeholder="Main product image URL"
                     />
+                  </div>
+
+                  {/* Additional Images */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Additional Images 
+                        <span className="text-xs text-gray-500 font-normal">(Optional)</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={addImageField}
+                        className="text-sm text-teal-600 hover:text-teal-700 font-medium"
+                      >
+                        + Add Image
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {prodForm.images.map((imageUrl, index) => (
+                        <div key={index} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={imageUrl}
+                            onChange={(e) => handleImageChange(index, e.target.value)}
+                            className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                            placeholder={`Additional image ${index + 1} URL`}
+                          />
+                          {prodForm.images.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeImageField(index)}
+                              className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg border border-red-200"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                 <input
@@ -447,7 +636,7 @@ export default function AdminDashboard() {
                       onClick={() => {
                         setShowAddForm(false);
                         setEditProdId(null);
-                        setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", category: "", isNew: false });
+                        setProdForm({ name: "", subtitle: "", slug: "", description: "", mrpPrice: "", primePrice: "", image: "", images: [""], category: "", isNew: false });
                       }}
                       className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                     >
@@ -477,6 +666,18 @@ export default function AdminDashboard() {
                       rows={4}
                     />
                   </div>
+
+                  {/* Icon Picker */}
+                  <IconPicker
+                    selectedIcon={catForm.icon}
+                    onIconSelect={handleIconSelect}
+                  />
+
+                  {/* Color Scheme Picker */}
+                  <ColorSchemePicker
+                    selectedColorScheme={catForm.colorScheme}
+                    onColorSchemeSelect={handleColorSchemeSelect}
+                  />
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       type="submit"
@@ -489,7 +690,7 @@ export default function AdminDashboard() {
                       onClick={() => {
                         setShowAddForm(false);
                         setEditCatId(null);
-                        setCatForm({ name: "", description: "" });
+                        setCatForm({ name: "", description: "", icon: "", colorScheme: "healtheek-teal" });
                       }}
                       className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
                     >

@@ -1,7 +1,8 @@
 import type { Product, Category } from "./types"
 
-// Categories - Complete list of all product categories
-export const categories: Category[] = [
+// Mock categories - DISABLED: Using only Firebase admin-added categories  
+// To re-enable mock categories, uncomment the export line below
+const categories: Category[] = [
   { id: "smart-formula-2025", name: "Smart Formula's", productCount: 8 },
   { id: "prime-formula", name: "Prime Formula's", productCount: 5 },
   { id: "popular-products", name: "Popular Products", productCount: 15 },
@@ -16,8 +17,9 @@ export const categories: Category[] = [
   { id: "wellness-coach", name: "Wellness Coach", productCount: 2 },
 ]
 
-// Extended product data with new categories
-export const products: Product[] = [
+// Mock data - DISABLED: Using only Firebase admin-added products
+// To re-enable mock data, uncomment the export line below
+const products: Product[] = [
   // Business Tools
   {
     id: "27",
@@ -289,39 +291,7 @@ export const products: Product[] = [
     reviewCount: 178,
   },
 
-  // Smart Formula 2025
-  {
-    id: "44",
-    name: "SMART FORMULA 2025 PREMIUM",
-    slug: "smart-formula-2025-premium",
-    subtitle: "Combo Pack",
-    description: "Next-generation health formula with advanced bioavailability technology.",
-    image: "/placeholder.svg?height=300&width=300",
-    mrpPrice: 9999.0,
-    primePrice: 7999.0,
-    category: "smart-formula-2025",
-    featured: true,
-    isNew: true,
-    inStock: true,
-    rating: 4.9,
-    reviewCount: 89,
-  },
-  {
-    id: "45",
-    name: "SMART DETOX 2025",
-    slug: "smart-detox-2025",
-    subtitle: "Combo Pack",
-    description: "Advanced detoxification system with cutting-edge cleansing technology.",
-    image: "/placeholder.svg?height=300&width=300",
-    mrpPrice: 8499.0,
-    primePrice: 6999.0,
-    category: "smart-formula-2025",
-    featured: true,
-    isNew: true,
-    inStock: true,
-    rating: 4.7,
-    reviewCount: 67,
-  },
+
 
   // Wellness Coach
   {
@@ -471,34 +441,87 @@ import { db } from "@/lib/firebase"
 import { collection, getDocs } from "firebase/firestore"
 
 export async function getProducts(): Promise<Product[]> {
-  // Fetch products from Firestore
-  const querySnapshot = await getDocs(collection(db, "products"));
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Product));
+  try {
+    // Fetch ONLY admin-added products from Firestore
+    const querySnapshot = await getDocs(collection(db, "products"));
+    const firebaseProducts = querySnapshot.docs.map((doc) => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as Product));
+    
+    // Return only Firebase products (admin-added), ignore local mock data
+    return firebaseProducts;
+  } catch (error) {
+    console.error("Error fetching products from Firebase:", error);
+    // Return empty array if Firebase fails, don't fall back to mock data
+    return [];
+  }
 }
 
 export async function getCategories(): Promise<Category[]> {
-  // Fetch categories from Firestore
-  const querySnapshot = await getDocs(collection(db, "categories"));
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Category));
+  try {
+    // Fetch ONLY admin-added categories from Firestore
+    const querySnapshot = await getDocs(collection(db, "categories"));
+    const firebaseCategories = querySnapshot.docs.map((doc) => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as Category));
+    
+    // Return only Firebase categories, ignore local mock data
+    return firebaseCategories;
+  } catch (error) {
+    console.error("Error fetching categories from Firebase:", error);
+    // Return empty array if Firebase fails
+    return [];
+  }
 }
 
 export async function getProduct(slug: string): Promise<Product | null> {
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return products.find((p) => p.slug === slug) || null
+  try {
+    // Get product from Firebase only
+    const firebaseProducts = await getProducts();
+    return firebaseProducts.find((p) => p.slug === slug) || null;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return null;
+  }
 }
 
 export async function getFeaturedProducts(): Promise<Product[]> {
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return products.filter((p) => p.featured)
+  try {
+    // Get featured products from Firebase only
+    const firebaseProducts = await getProducts();
+    return firebaseProducts.filter((p) => p.featured);
+  } catch (error) {
+    console.error("Error fetching featured products:", error);
+    return [];
+  }
 }
 
 export async function getCategory(id: string): Promise<Category | null> {
-  await new Promise((resolve) => setTimeout(resolve, 50))
+  try {
+    // Handle popular products as a special case
+    if (id === "popular-products") {
+      const firebaseProducts = await getProducts();
+      const popularCount = firebaseProducts.filter(p => p.featured).length;
+      return { id: "popular-products", name: "Popular Products", productCount: popularCount }
+    }
 
-  // Handle popular products as a special case
-  if (id === "popular-products") {
-    return { id: "popular-products", name: "Popular Products", productCount: 15 }
+    // Get category from Firebase only
+    const firebaseCategories = await getCategories();
+    return firebaseCategories.find((c) => c.id === id) || null;
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    return null;
   }
+}
 
-  return categories.find((c) => c.id === id) || null
+export async function getCategoryByName(categoryName: string): Promise<Category | null> {
+  try {
+    const firebaseCategories = await getCategories();
+    return firebaseCategories.find((c) => c.name === categoryName) || null;
+  } catch (error) {
+    console.error("Error fetching category by name:", error);
+    return null;
+  }
 }
