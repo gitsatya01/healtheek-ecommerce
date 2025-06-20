@@ -130,7 +130,7 @@ export default function SignupPage() {
               <UserPlus className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">Create Account</CardTitle>
-            <p className="text-gray-600 mt-2">Join HealthEek and start your wellness journey</p>
+                          <p className="text-gray-600 mt-2">Join your website and start your wellness journey</p>
           </CardHeader>
           
           <CardContent>

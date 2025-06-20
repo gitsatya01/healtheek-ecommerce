@@ -337,7 +337,7 @@ export default function AdminDashboard() {
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
-            <h1 className="text-xl font-bold text-gray-800">Healtheek Admin</h1>
+            <h1 className="text-xl font-bold text-gray-800">your website Admin</h1>
           </div>
           <button
             onClick={handleLogout}
@@ -353,7 +353,7 @@ export default function AdminDashboard() {
         <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="bg-white w-64 h-full shadow-lg" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
-              <h1 className="text-2xl font-bold text-gray-800">Healtheek</h1>
+              <h1 className="text-2xl font-bold text-gray-800">your website</h1>
               <p className="text-sm text-gray-600">Admin Panel</p>
             </div>
             <nav className="mt-6">
@@ -398,7 +398,7 @@ export default function AdminDashboard() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white shadow-lg">
         <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800">Healtheek</h1>
+          <h1 className="text-2xl font-bold text-gray-800">your website</h1>
           <p className="text-sm text-gray-600">Admin Panel</p>
                   </div>
         <nav className="mt-6">

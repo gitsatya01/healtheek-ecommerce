@@ -126,7 +126,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-teal-500 rounded-full"></div>
-            <span className="text-lg md:text-xl font-bold text-teal-600">HEALTHEEK</span>
+                          <span className="text-lg md:text-xl font-bold text-teal-600">your website</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -7,7 +7,7 @@ import { getProducts, getCategories } from "@/lib/data"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Buy Products - HealthEek",
+  title: "Buy Products - your website",
   description: "Browse our complete collection of health and wellness supplements across all categories.",
 }
 

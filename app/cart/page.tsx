@@ -3,7 +3,7 @@ import { Footer } from "@/components/layout/footer"
 import { CartPage } from "@/components/cart/cart-page"
 
 export const metadata = {
-  title: "Shopping Cart - HealthEek",
+  title: "Shopping Cart - your website",
   description: "Review your selected health supplements before checkout.",
 }
 

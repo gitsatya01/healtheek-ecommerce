@@ -94,7 +94,7 @@ export default function AdminLogin() {
               <Shield className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">Admin Login</CardTitle>
-            <p className="text-gray-600 mt-2">Access your HealthEek admin dashboard</p>
+                          <p className="text-gray-600 mt-2">Access your website admin dashboard</p>
           </CardHeader>
           
           <CardContent>

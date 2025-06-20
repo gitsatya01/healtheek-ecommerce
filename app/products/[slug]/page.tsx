@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${product.name} - HealthEek`,
+    title: `${product.name} - your website`,
     description: product.description,
     openGraph: {
       title: product.name,

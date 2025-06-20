@@ -26,12 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!category) {
     return {
-      title: "Category Not Found - HealthEek",
+      title: "Category Not Found - your website",
     }
   }
 
   return {
-    title: `${category.name} - HealthEek`,
+    title: `${category.name} - your website`,
     description: `Browse our ${category.name.toLowerCase()} products for optimal health and wellness.`,
   }
 }

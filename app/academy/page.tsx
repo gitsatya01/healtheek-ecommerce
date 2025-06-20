@@ -10,8 +10,8 @@ import { db } from "@/lib/firebase"
 import { collection, getDocs } from "firebase/firestore"
 
 export const metadata: Metadata = {
-  title: "Academy - HealthEek",
-  description: "Learn from health experts and become a certified wellness coach with HealthEek Academy.",
+  title: "Academy - your website",
+  description: "Learn from health experts and become a certified wellness coach with your website Academy.",
 }
 
 // Force dynamic rendering to ensure fresh data
@@ -121,7 +121,7 @@ export default async function AcademyPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose HealthEek Academy?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose your website Academy?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Our comprehensive learning platform provides everything you need to succeed in the health and wellness
               industry
@@ -254,7 +254,7 @@ export default async function AcademyPage() {
                 name: "Anita Patel",
                 role: "Fitness Coach",
                 image: "/placeholder.svg?height=100&width=100",
-                quote: "HealthEek Academy gave me the confidence and credentials to become a successful fitness entrepreneur.",
+                quote: "your website Academy gave me the confidence and credentials to become a successful fitness entrepreneur.",
               },
             ].map((story, index) => (
               <Card key={index} className="text-center">
@@ -283,7 +283,7 @@ export default async function AcademyPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Start Your Journey?</h2>
           <p className="text-xl text-teal-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of successful health professionals who started their journey with HealthEek Academy
+            Join thousands of successful health professionals who started their journey with your website Academy
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600">

@@ -9,13 +9,13 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "HealthEek - Premium Health & Wellness Supplements",
+  title: "your website - Premium Health & Wellness Supplements",
   description:
     "Discover premium health and wellness supplements. From smart formulas to individual products, find everything you need for optimal health.",
   keywords: "health supplements, wellness products, smart formulas, nutrition, vitamins",
-  authors: [{ name: "HealthEek" }],
+  authors: [{ name: "your website" }],
   openGraph: {
-    title: "HealthEek - Premium Health & Wellness Supplements",
+    title: "your website - Premium Health & Wellness Supplements",
     description: "Discover premium health and wellness supplements for optimal health.",
     type: "website",
     locale: "en_US",

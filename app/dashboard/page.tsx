@@ -112,7 +112,7 @@ export default function UserDashboard() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className="w-8 h-8 text-green-600 mr-2" />
-              <h1 className="text-xl font-bold text-gray-900">HealthEek - My Cart</h1>
+              <h1 className="text-xl font-bold text-gray-900">your website - My Cart</h1>
             </div>
             
             <div className="flex items-center space-x-4">

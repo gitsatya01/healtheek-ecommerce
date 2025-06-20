@@ -3,8 +3,8 @@ import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Terms and Conditions - HealthEek",
-  description: "Terms and conditions for using HealthEek services.",
+  title: "Terms and Conditions - your website",
+  description: "Terms and conditions for using your website services.",
 };
 
 export default function TermsPage() {
@@ -22,22 +22,22 @@ export default function TermsPage() {
               
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
               <p className="mb-4">
-                By accessing and using HealthEek, you accept and agree to be bound by the terms and provision of this agreement.
+                By accessing and using your website, you accept and agree to be bound by the terms and provision of this agreement.
               </p>
 
               <h2 className="text-2xl font-semibold mb-4">2. Use License</h2>
               <p className="mb-4">
-                Permission is granted to temporarily download one copy of the materials on HealthEek for personal, non-commercial transitory viewing only.
+                Permission is granted to temporarily download one copy of the materials on your website for personal, non-commercial transitory viewing only.
               </p>
 
               <h2 className="text-2xl font-semibold mb-4">3. Disclaimer</h2>
               <p className="mb-4">
-                The materials on HealthEek are provided on an 'as is' basis. HealthEek makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+                The materials on your website are provided on an 'as is' basis. your website makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
               </p>
 
               <h2 className="text-2xl font-semibold mb-4">4. Limitations</h2>
               <p className="mb-4">
-                In no event shall HealthEek or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on HealthEek, even if HealthEek or a HealthEek authorized representative has been notified orally or in writing of the possibility of such damage.
+                In no event shall your website or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on your website, even if your website or a your website authorized representative has been notified orally or in writing of the possibility of such damage.
               </p>
 
               <h2 className="text-2xl font-semibold mb-4">5. Privacy Policy</h2>
@@ -47,7 +47,7 @@ export default function TermsPage() {
 
               <h2 className="text-2xl font-semibold mb-4">6. Contact Information</h2>
               <p className="mb-4">
-                If you have any questions about these Terms and Conditions, please contact us at support@healtheek.com.
+                If you have any questions about these Terms and Conditions, please contact us at support@yourwebsite.com.
               </p>
             </CardContent>
           </Card>

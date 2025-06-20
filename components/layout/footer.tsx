@@ -34,7 +34,7 @@ export function Footer() {
             <div className="space-y-6">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-white rounded-full"></div>
-                <span className="text-xl font-bold">HEALTHEEK</span>
+                <span className="text-xl font-bold">your website</span>
               </div>
 
               <div>
@@ -154,12 +154,12 @@ export function Footer() {
                 </li>
                 <li>
                   <Link href="#" className="text-gray-200 hover:text-white transition-colors">
-                    HEALTHEEK LLC
+                    your website LLC
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-200 hover:text-white transition-colors">
-                    HEALTHEEK UK LIMITED
+                    your website UK LIMITED
                   </Link>
                 </li>
               </ul>
@@ -172,7 +172,7 @@ export function Footer() {
       <div className="bg-teal-700 py-4">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm">
-            <p className="text-gray-200">© Copyrights 2024 HealthEek (P) Limited. All rights reserved</p>
+            <p className="text-gray-200">© Copyrights 2024 your website (P) Limited. All rights reserved</p>
             <div className="flex space-x-4 mt-2 md:mt-0">
               <Link href="#" className="text-gray-200 hover:text-white transition-colors">
                 Terms Of Use

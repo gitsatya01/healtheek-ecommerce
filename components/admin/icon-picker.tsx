@@ -173,7 +173,7 @@ const availableIcons: IconData[] = [
 ]
 
 const colorSchemes = [
-  { name: "Healtheek Teal", value: "healtheek-teal", colors: "from-teal-600 to-emerald-600" },
+      { name: "your website Teal", value: "healtheek-teal", colors: "from-teal-600 to-emerald-600" },
   { name: "Health Green", value: "health-green", colors: "from-emerald-500 to-green-500" },
   { name: "Medical Blue", value: "medical-blue", colors: "from-blue-500 to-indigo-500" },
   { name: "Wellness Purple", value: "wellness-purple", colors: "from-purple-500 to-violet-500" },

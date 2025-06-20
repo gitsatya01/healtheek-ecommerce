@@ -3,8 +3,8 @@ import { Footer } from "@/components/layout/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = {
-  title: "Privacy Policy - HealthEek",
-  description: "Privacy policy for HealthEek services.",
+  title: "Privacy Policy - your website",
+  description: "Privacy policy for your website services.",
 };
 
 export default function PrivacyPage() {
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
 
               <h2 className="text-2xl font-semibold mb-4">7. Contact Us</h2>
               <p className="mb-4">
-                If you have any questions about this Privacy Policy, please contact us at privacy@healtheek.com.
+                If you have any questions about this Privacy Policy, please contact us at privacy@yourwebsite.com.
               </p>
             </CardContent>
           </Card>
